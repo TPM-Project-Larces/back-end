@@ -1,0 +1,24 @@
+info:
+  contact: {}
+paths:
+  /upload_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload a file to encrypt
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - User operations
+swagger: "2.0"

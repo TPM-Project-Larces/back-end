@@ -9,16 +9,16 @@ import (
 
 // @BasePath /
 
-// @Summary upload file
+// @Summary upload key
 
-// @Description upload a file to encrypt
+// @Description uploads a public key
 // @Tags Server operations
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "File"
-// @Success 200 {string} file_uploaded
-// @Router /upload_file [post]
-func UploadFile(ctx *gin.Context) {
+// @Success 200 {string} key_uploaded
+// @Router /upload_key [post]
+func UploadKey(ctx *gin.Context) {
 	ctx.Request.ParseMultipartForm(10 << 20)
 
 	file, err := ctx.FormFile("arquivo")
@@ -28,7 +28,7 @@ func UploadFile(ctx *gin.Context) {
 	}
 
 	// Salva o arquivo no servidor
-	err = ctx.SaveUploadedFile(file, "./files_to_encrypt/"+file.Filename)
+	err = ctx.SaveUploadedFile(file, "./key/"+file.Filename)
 	if err != nil {
 		SendError(ctx, http.StatusInternalServerError, err.Error())
 		return

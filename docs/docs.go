@@ -25,7 +25,38 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User operations"
+                    "Server operations"
+                ],
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload_key": {
+            "post": {
+                "description": "uploads a public key",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Server operations"
                 ],
                 "parameters": [
                     {

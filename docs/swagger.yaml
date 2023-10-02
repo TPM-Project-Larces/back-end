@@ -20,5 +20,25 @@ paths:
           schema:
             type: string
       tags:
-      - User operations
+      - Server operations
+  /upload_key:
+    post:
+      consumes:
+      - multipart/form-data
+      description: uploads a public key
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - Server operations
 swagger: "2.0"

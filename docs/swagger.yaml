@@ -1,0 +1,66 @@
+info:
+  contact: {}
+paths:
+  /decrypt_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload a file to decrypt
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Folders available for upload
+          schema:
+            items:
+              type: string
+            type: array
+      tags:
+      - Server operations
+  /upload_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload a file to encrypt
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - Server operations
+  /upload_key:
+    post:
+      consumes:
+      - multipart/form-data
+      description: uploads a public key
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - Server operations
+swagger: "2.0"

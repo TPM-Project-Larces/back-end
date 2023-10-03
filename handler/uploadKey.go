@@ -27,14 +27,14 @@ func UploadKey(ctx *gin.Context) {
 		return
 	}
 
-	// Salva o arquivo no servidor
+	// Salva a chave no servidor
 	err = ctx.SaveUploadedFile(file, "./key/"+file.Filename)
 	if err != nil {
 		SendError(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	fmt.Println("Arquivo recebido e armazenado com sucesso.")
+	fmt.Println("Chave recebida e armazenada com sucesso.")
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Arquivo recebido e armazenado com sucesso"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Chave pública recebida e armazenada com sucesso"})
 }

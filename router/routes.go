@@ -16,6 +16,7 @@ func initializeRoutes(router *gin.Engine) {
 		//Show Oppening
 		v1.POST("/upload_file", handler.UploadFile)
 		v1.POST("/upload_key", handler.UploadKey)
+		v1.GET("/decryptFile", handler.DecryptFile)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

@@ -1,8 +1,14 @@
 package handler
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/pem"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,10 +33,70 @@ func UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	// Salva o arquivo no servidor
-	err = ctx.SaveUploadedFile(file, "./files_to_encrypt/"+file.Filename)
+	// Open public key file
+	filePath := "./key/public_key.pem"
+	filePublicKey, err := os.Open(filePath)
+	handleError("Error opening public key file", err)
+	defer filePublicKey.Close()
+
+	// Reads public key file
+	publicKeyData, err := ioutil.ReadAll(filePublicKey)
+	handleError("Error reading public key file", err)
+
+	blockPublicKey, _ := pem.Decode(publicKeyData)
+	handleError("Error deconding public key to block", err)
+
+	publicKeyData = blockPublicKey.Bytes
+
+	publicKey, err := x509.ParsePKIXPublicKey(publicKeyData)
+	handleError("Error converting public key bytes to public key object", err)
+
+	publicKeyRsa := publicKey.(*rsa.PublicKey)
+
+	// Abra o arquivo diretamente sem salvá-lo no disco
+	uploadedFile, err := file.Open()
 	if err != nil {
-		SendError(ctx, http.StatusInternalServerError, err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer uploadedFile.Close()
+
+	data, err := ioutil.ReadAll(uploadedFile)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Dividir os dados em blocos menores (tamanho máximo de bloco para criptografia RSA)
+	maxBlockSize := 245
+	var encryptedBlocks []byte
+	for len(data) > 0 {
+		blockSize := len(data)
+		if blockSize > maxBlockSize {
+			blockSize = maxBlockSize
+		}
+
+		// Criptografar o bloco e adicionar à lista de blocos criptografados
+		encryptedBlock, err := rsa.EncryptPKCS1v15(rand.Reader, publicKeyRsa, data[:blockSize])
+		if err != nil {
+			fmt.Println("Erro ao criptografar o bloco:", err)
+			return
+		}
+		encryptedBlocks = append(encryptedBlocks, encryptedBlock...)
+		data = data[blockSize:]
+	}
+
+	tempDir := "./encrypted_files"
+	err = os.MkdirAll(tempDir, os.ModePerm)
+	handleError("Error creating 'encrypted_files' directory", err)
+
+	tempfile, err := os.Create(tempDir + "/" + file.Filename)
+	handleError("Error creating file", err)
+	defer tempfile.Close()
+
+	err = ioutil.WriteFile(tempfile.Name(), encryptedBlocks, 0644)
+	if err != nil {
+		fmt.Println("Erro ao escrever o arquivo criptografado:", err)
 		return
 	}
 

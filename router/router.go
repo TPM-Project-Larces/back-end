@@ -12,5 +12,5 @@ func Initialize() {
 	initializeRoutes(router)
 
 	// Rodar a nossa API
-	router.Run(":3000") //listen and serve on 0.0.0.0:3000
+	router.Run(":5000") //listen and serve on 0.0.0.0:5000
 }

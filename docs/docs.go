@@ -17,7 +17,54 @@ const docTemplate = `{
     "paths": {
         "/decrypt_file": {
             "post": {
-                "description": "upload a file to decrypt",
+                "description": "Provide the filename to decrypt",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Server operations"
+                ],
+                "summary": "Decrypt a file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filename to decrypt",
+                        "name": "filename",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "file_decrypted",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/saved_file": {
+            "post": {
+                "description": "upload a file to encrypt",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -38,12 +85,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Folders available for upload",
+                        "description": "file_uploaded",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -72,7 +134,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "file_uploaded",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
                         "schema": {
                             "type": "string"
                         }
@@ -103,7 +183,25 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "key_uploaded",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
                         "schema": {
                             "type": "string"
                         }

@@ -3,9 +3,40 @@ info:
 paths:
   /decrypt_file:
     post:
+      description: Provide the filename to decrypt
+      parameters:
+      - description: Filename to decrypt
+        in: formData
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: file_decrypted
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Decrypt a file
+      tags:
+      - Server operations
+  /saved_file:
+    post:
       consumes:
       - multipart/form-data
-      description: upload a file to decrypt
+      description: upload a file to encrypt
       parameters:
       - description: File
         in: formData
@@ -16,11 +47,21 @@ paths:
       - application/json
       responses:
         "200":
-          description: Folders available for upload
+          description: file_uploaded
           schema:
-            items:
-              type: string
-            type: array
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
       tags:
       - Server operations
   /upload_file:
@@ -38,7 +79,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: file_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
           schema:
             type: string
       tags:
@@ -58,7 +111,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: key_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
           schema:
             type: string
       tags:

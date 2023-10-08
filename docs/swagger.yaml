@@ -3,24 +3,21 @@ info:
 paths:
   /decrypt_file:
     post:
-      consumes:
-      - multipart/form-data
-      description: upload a file to decrypt
+      description: Provide the filename to decrypt
       parameters:
-      - description: File
+      - description: Filename to decrypt
         in: formData
-        name: file
+        name: filename
         required: true
-        type: file
+        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: Folders available for upload
+          description: Decrypted file
           schema:
-            items:
-              type: string
-            type: array
+            type: string
+      summary: Decrypt a file
       tags:
       - Server operations
   /upload_file:

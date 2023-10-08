@@ -63,4 +63,16 @@ func sendFile(fileName string, url string) {
 		return
 	}
 	defer response.Body.Close()
+
+	// Excluir arquivo se nao for a chave
+	if fileName != "./key/public_key.pem" {
+		os.Remove(fileName)
+	}
+
+	// Verifique a resposta do servidor
+	if response.StatusCode == http.StatusOK {
+		return
+	} else {
+		return
+	}
 }

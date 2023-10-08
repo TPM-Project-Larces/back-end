@@ -17,33 +17,28 @@ const docTemplate = `{
     "paths": {
         "/decrypt_file": {
             "post": {
-                "description": "upload a file to decrypt",
-                "consumes": [
-                    "multipart/form-data"
-                ],
+                "description": "Provide the filename to decrypt",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Server operations"
                 ],
+                "summary": "Decrypt a file",
                 "parameters": [
                     {
-                        "type": "file",
-                        "description": "File",
-                        "name": "file",
+                        "type": "string",
+                        "description": "Filename to decrypt",
+                        "name": "filename",
                         "in": "formData",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Folders available for upload",
+                        "description": "Decrypted file",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "type": "string"
                         }
                     }
                 }

@@ -20,6 +20,26 @@ paths:
       summary: Decrypt a file
       tags:
       - Server operations
+  /saved_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload a file to encrypt
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      tags:
+      - Server operations
   /upload_file:
     post:
       consumes:

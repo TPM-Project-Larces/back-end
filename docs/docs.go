@@ -44,6 +44,37 @@ const docTemplate = `{
                 }
             }
         },
+        "/saved_file": {
+            "post": {
+                "description": "upload a file to encrypt",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Server operations"
+                ],
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/upload_file": {
             "post": {
                 "description": "upload a file to encrypt",

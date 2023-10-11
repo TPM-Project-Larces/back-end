@@ -2,10 +2,10 @@ package handler
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/gin-gonic/gin"
 )
 
 // @Summary Decrypt a file
@@ -13,7 +13,10 @@ import (
 // @Tags Server operations
 // @Produce json
 // @Param filename formData string true "Filename to decrypt"
-// @Success 200 {object} string "Decrypted file"
+// @Success 200 {string} string "file_decrypted"
+// @Failure 400 {string} string "bad_request"
+// @Failure 404 {string} string "not_found"
+// @Failure 500 {string} string "internal_server_error"
 // @Router /decrypt_file [post]
 func DecryptFile(ctx *gin.Context) {
 	ctx.Request.ParseMultipartForm(10 << 20)
@@ -27,20 +30,19 @@ func DecryptFile(ctx *gin.Context) {
 
 	if nameFile == "" || os.IsNotExist(err) {
 		// O arquivo não existe, retorna uma mensagem de erro
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "not found file"})
+		response(ctx, 404, "file_not_found", err)
 		return
 	} else if err != nil {
+
 		// Outro erro ocorreu, retorna um erro interno do servidor
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		response(ctx, 500, "internal_server_error", err)
 		return
 	}
-
-	// Retorna uma mensagem de sucesso.
-	ctx.JSON(http.StatusOK, gin.H{"message": "file found and sent to another API"})
 
 	url := "http://localhost:5000/decrypt_file/"
 
 	sendFile(filePath, url)
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "Encrypted file successfully sent to the client"})
+	response(ctx, 200, "file_decrypted", err)
+
 }

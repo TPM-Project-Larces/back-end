@@ -7,13 +7,24 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+
+	"github.com/gin-gonic/gin"
 )
 
-func handleError(message string, err error) {
-	if err != nil {
-		fmt.Println(message+":", err)
-		panic((err))
+func response(ctx *gin.Context, code int, message string, err error) {
+	response := gin.H{
+		"code": code,
 	}
+
+	if message != "" {
+		response["message"] = message
+	}
+
+	if err != nil {
+		response["error"] = err.Error()
+	}
+
+	ctx.JSON(code, response)
 }
 
 func sendFile(fileName string, url string) {

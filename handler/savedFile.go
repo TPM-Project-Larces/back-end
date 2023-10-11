@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -18,29 +16,29 @@ import (
 // @Accept multipart/form-data
 // @Produce json
 // @Param file formData file true "File"
-// @Success 200 {string} file_uploaded
+// @Success 200 {string} string "file_uploaded"
+// @Failure 400 {string} string "bad_request"
+// @Failure 404 {string} string "not_found"
+// @Failure 500 {string} string "internal_server_error"
 // @Router /saved_file [post]
 func SavedFile(ctx *gin.Context) {
 	ctx.Request.ParseMultipartForm(10 << 20)
 
 	file, err := ctx.FormFile("arquivo")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		response(ctx, 400, "bad_request", err)
 	}
 
 	//Abra o arquivo diretamente sem salvá-lo no disco
 	uploadedFile, err := file.Open()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		response(ctx, 500, "internal_server_error", err)
 	}
 	defer uploadedFile.Close()
 
 	data, err := ioutil.ReadAll(uploadedFile)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		response(ctx, 500, "internal_server_error", err)
 	}
 
 	// Dividir os dados em blocos menores
@@ -61,19 +59,21 @@ func SavedFile(ctx *gin.Context) {
 
 	tempDir := "./decrypted_files"
 	err = os.MkdirAll(tempDir, os.ModePerm)
-	handleError("Error creating 'decrypted_files' directory", err)
+	if err != nil {
+		response(ctx, 500, "internal_server_error", err)
+	}
 
 	tempfile, err := os.Create(tempDir + "/" + file.Filename)
-	handleError("Error creating file", err)
+	if err != nil {
+		response(ctx, 500, "internal_server_error", err)
+	}
+
 	defer tempfile.Close()
 
 	err = ioutil.WriteFile(tempfile.Name(), encryptedBlocks, 0644)
 	if err != nil {
-		fmt.Println("Erro ao escrever o arquivo descriptografado:", err)
-		return
+		response(ctx, 500, "internal_server_error", err)
 	}
 
-	fmt.Println("Arquivo descriptografado com sucesso!")
-
-	ctx.JSON(http.StatusOK, "file decrypted")
+	response(ctx, 200, "file_decrypted", err)
 }

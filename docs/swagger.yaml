@@ -1,6 +1,108 @@
+definitions:
+  handler.CreateUserRequest:
+    properties:
+      address:
+        $ref: '#/definitions/schemas.Address'
+      contact:
+        $ref: '#/definitions/schemas.Contact'
+      cpf:
+        type: string
+      dateOfBirth:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  handler.CreateUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
+  schemas.Address:
+    properties:
+      city:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      zipcode:
+        type: string
+    type: object
+  schemas.Contact:
+    properties:
+      celphone:
+        type: string
+      phone:
+        type: string
+    type: object
+  schemas.UserResponse:
+    properties:
+      address:
+        $ref: '#/definitions/schemas.Address'
+      contact:
+        $ref: '#/definitions/schemas.Contact'
+      cpf:
+        type: string
+      createdAt:
+        type: string
+      dateOfBirth:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      password:
+        type: string
+      updatedAt:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
+  /create_user:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CreateUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - Register
   /decrypt_file:
     post:
       description: Provide the filename to decrypt

@@ -23,6 +23,22 @@ definitions:
       message:
         type: string
     type: object
+  handler.ListUsersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/schemas.UserResponse'
+        type: array
+      message:
+        type: string
+    type: object
+  handler.ShowUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
   schemas.Address:
     properties:
       city:
@@ -134,6 +150,56 @@ paths:
       summary: Decrypt a file
       tags:
       - Server operations
+  /get_user_by_email:
+    post:
+      description: Provide the data username
+      parameters:
+      - description: Username to Find
+        in: formData
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ShowUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Find username database
+      tags:
+      - Users
+  /get_users:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListUsersResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get all users
+      tags:
+      - Users
   /saved_file:
     post:
       consumes:

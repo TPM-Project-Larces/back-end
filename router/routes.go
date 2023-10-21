@@ -22,7 +22,8 @@ func initializeRoutes(router *gin.Engine) {
 	v2 := router.Group(basePath)
 	{
 		v2.POST("create_user/", handler.CreateUser)
-
+		v2.GET("get_users/", handler.GetUsers)
+		v2.POST("get_user_by_email", handler.GetUserByEmail)
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

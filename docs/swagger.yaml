@@ -46,6 +46,20 @@ definitions:
       message:
         type: string
     type: object
+  handler.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  handler.LoginResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.Token'
+      message:
+        type: string
+    type: object
   handler.ShowUserResponse:
     properties:
       data:
@@ -96,6 +110,8 @@ definitions:
         type: string
       phone:
         type: string
+    type: object
+  schemas.Token:
     type: object
   schemas.UserResponse:
     properties:
@@ -158,6 +174,36 @@ paths:
       summary: Decrypt a file
       tags:
       - Server operations
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.LoginResponse'
+        "404":
+          description: user_not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - Auth
   /saved_file:
     post:
       consumes:

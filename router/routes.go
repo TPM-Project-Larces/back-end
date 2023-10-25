@@ -11,6 +11,12 @@ import (
 func initializeRoutes(router *gin.Engine) {
 	basePath := "/"
 	docs.SwaggerInfo.BasePath = basePath
+
+	auth := router.Group(basePath)
+	{
+		auth.POST("login/", handler.Login)
+	}
+
 	v1 := router.Group(basePath)
 	{
 		//Show Oppening

@@ -62,6 +62,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/login": {
+            "post": {
+                "description": "Create a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Create user",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.LoginResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "user_not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/saved_file": {
             "post": {
                 "description": "upload a file to encrypt",
@@ -513,6 +559,28 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.Token"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.ShowUserResponse": {
             "type": "object",
             "properties": {
@@ -591,6 +659,9 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "schemas.Token": {
+            "type": "object"
         },
         "schemas.UserResponse": {
             "type": "object",

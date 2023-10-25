@@ -29,3 +29,8 @@ type UpdateUserRequest struct {
 	Contact     schemas.Contact `bson:"contact"`
 	Address     schemas.Address `bson:"address"`
 }
+
+type LoginRequest struct {
+	Email       string          `bson:"email"`
+	Password    string          `bson:"password"`
+}

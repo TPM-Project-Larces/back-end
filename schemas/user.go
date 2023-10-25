@@ -47,3 +47,7 @@ type UserResponse struct {
 	Contact     Contact            `bson:"contact"`
 	Address     Address            `bson:"address"`
 }
+
+type Token struct {
+	token string `bson:"token"`
+}

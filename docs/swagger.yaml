@@ -15,8 +15,22 @@ definitions:
         type: string
       password:
         type: string
+      username:
+        type: string
     type: object
   handler.CreateUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
+  handler.DeleteUserRequest:
+    properties:
+      username:
+        type: string
+    type: object
+  handler.DeleteUserResponse:
     properties:
       data:
         $ref: '#/definitions/schemas.UserResponse'
@@ -33,6 +47,32 @@ definitions:
         type: string
     type: object
   handler.ShowUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
+  handler.UpdateUserRequest:
+    properties:
+      address:
+        $ref: '#/definitions/schemas.Address'
+      contact:
+        $ref: '#/definitions/schemas.Contact'
+      cpf:
+        type: string
+      dateOfBirth:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  handler.UpdateUserResponse:
     properties:
       data:
         $ref: '#/definitions/schemas.UserResponse'
@@ -74,51 +114,19 @@ definitions:
       email:
         type: string
       id:
-        type: integer
+        type: string
       name:
         type: string
       password:
         type: string
       updatedAt:
         type: string
+      username:
+        type: string
     type: object
 info:
   contact: {}
 paths:
-  /create_user:
-    post:
-      consumes:
-      - application/json
-      description: Create a new user
-      parameters:
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/handler.CreateUserRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.CreateUserResponse'
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      summary: Create user
-      tags:
-      - Register
   /decrypt_file:
     post:
       description: Provide the filename to decrypt
@@ -150,56 +158,6 @@ paths:
       summary: Decrypt a file
       tags:
       - Server operations
-  /get_user_by_email:
-    post:
-      description: Provide the data username
-      parameters:
-      - description: Username to Find
-        in: formData
-        name: username
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ShowUserResponse'
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      summary: Find username database
-      tags:
-      - Users
-  /get_users:
-    get:
-      consumes:
-      - application/json
-      description: Get a list of all users
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.ListUsersResponse'
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      summary: Get all users
-      tags:
-      - Users
   /saved_file:
     post:
       consumes:
@@ -296,4 +254,155 @@ paths:
             type: string
       tags:
       - Server operations
+  /user:
+    delete:
+      description: deletes a user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.DeleteUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DeleteUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Delete user
+      tags:
+      - Users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CreateUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - Users
+    put:
+      description: updates a user
+      parameters:
+      - description: User's username
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: User data to Update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.UpdateUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: user_not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Update user
+      tags:
+      - Users
+  /user/by_username:
+    get:
+      description: Provide the user data
+      parameters:
+      - description: User`s username to find
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ShowUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Find user by username
+      tags:
+      - Users
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListUsersResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get all users
+      tags:
+      - Users
 swagger: "2.0"

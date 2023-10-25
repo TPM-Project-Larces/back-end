@@ -11,7 +11,7 @@ import (
 
 // @Summary Create user
 // @Description Create a new user
-// @Tags Register
+// @Tags Users
 // @Accept json
 // @Produce json
 // @Param request body CreateUserRequest true "Request body"
@@ -19,7 +19,7 @@ import (
 // @Failure 400 {string} string "bad_request"
 // @Failure 404 {string} string "not_found"
 // @Failure 500 {string} string "internal_server_error"
-// @Router /create_user [post]
+// @Router /user [post]
 func CreateUser(ctx *gin.Context) {
 
 	request := CreateUserRequest{}
@@ -33,6 +33,7 @@ func CreateUser(ctx *gin.Context) {
 	user := schemas.User{
 		CPF:         request.CPF,
 		Name:        request.Name,
+		Username:    request.Username,
 		DateOfBirth: request.DateOfBirth,
 		Email:       request.Email,
 		Password:    request.Password,

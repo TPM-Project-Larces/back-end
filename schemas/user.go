@@ -1,6 +1,10 @@
 package schemas
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 // Defining the Address model
 type Address struct {
@@ -18,25 +22,28 @@ type Contact struct {
 
 // Defining the User model
 type User struct {
-	CPF         string
-	Name        string
-	DateOfBirth string
-	Email       string
-	Password    string
-	Contact     Contact
-	Address     Address
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	CPF         string             `bson:"cpf"`
+	Name        string             `bson:"name"`
+	Username    string             `bson:"username"`
+	DateOfBirth string             `bson:"date_of_birth"`
+	Email       string             `bson:"email"`
+	Password    string             `bson:"password"`
+	Contact     Contact            `bson:"contact"`
+	Address     Address            `bson:"address"`
 }
 
 type UserResponse struct {
-	ID          uint       `bson:"id"`
-	CreatedAt   time.Time  `bson:"created_at"`
-	UpdatedAt   time.Time  `bson:"updated_at"`
-	DeletedAt   *time.Time `bson:"deleted_at,omitempty"`
-	CPF         string     `bson:"cpf"`
-	Name        string     `bson:"name"`
-	DateOfBirth string     `bson:"date_of_birth"`
-	Email       string     `bson:"email"`
-	Password    string     `bson:"password"`
-	Contact     Contact    `bson:"contact"`
-	Address     Address    `bson:"address"`
+	ID          primitive.ObjectID `bson:"_id,omitempty"`
+	CreatedAt   time.Time          `bson:"created_at"`
+	UpdatedAt   time.Time          `bson:"updated_at"`
+	DeletedAt   *time.Time         `bson:"deleted_at,omitempty"`
+	CPF         string             `bson:"cpf"`
+	Name        string             `bson:"name"`
+	Username    string             `bson:"username"`
+	DateOfBirth string             `bson:"date_of_birth"`
+	Email       string             `bson:"email"`
+	Password    string             `bson:"password"`
+	Contact     Contact            `bson:"contact"`
+	Address     Address            `bson:"address"`
 }

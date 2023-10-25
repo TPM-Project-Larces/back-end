@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+
 	"github.com/TPM-Project-Larces/back-end.git/schemas"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,7 +15,7 @@ import (
 // @Produce json
 // @Success 200 {object} ListUsersResponse
 // @Failure 500 {string} string "internal_server_error"
-// @Router /get_users [get]
+// @Router /users [get]
 func GetUsers(ctx *gin.Context) {
 	// Acesse a coleção "users"
 	collection := db.Collection("users")

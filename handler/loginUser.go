@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"time"
 
 	"github.com/TPM-Project-Larces/back-end.git/schemas"
 	"github.com/dgrijalva/jwt-go"
@@ -12,6 +13,7 @@ import (
 func generateBearerToken(username string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"username": username,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	})
 
 	// When the Docker container is created, set this secret key as an environment variable

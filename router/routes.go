@@ -1,24 +1,17 @@
 package router
 
 import (
-	docs "github.com/TPM-Project-Larces/back-end.git/docs"
 	"github.com/TPM-Project-Larces/back-end.git/handler"
 	"github.com/gin-gonic/gin"
-	swaggerfiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func initializeRoutes(router *gin.Engine) {
-	basePath := "/"
-	docs.SwaggerInfo.BasePath = basePath
-	v1 := router.Group(basePath)
-	{
-		//Show Oppening
-		v1.POST("/upload_file", handler.UploadFile)
-		v1.POST("/upload_key", handler.UploadKey)
-		v1.POST("/decrypt_file", handler.DecryptFile)
-		v1.POST("/saved_file", handler.SavedFile)
-	}
+func encryptionRoutes(router *gin.Engine, basePath string, pathResource string) {
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	encryption := router.Group(basePath + pathResource)
+	{
+		encryption.POST("/upload_file", handler.UploadFile)
+		encryption.POST("/upload_key", handler.UploadKey)
+		encryption.POST("/decrypt_file", handler.DecryptFile)
+		encryption.POST("/saved_file", handler.SavedFile)
+	}
 }

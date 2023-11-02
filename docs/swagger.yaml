@@ -1,3 +1,50 @@
+definitions:
+  handler.DeleteFileRequest:
+    properties:
+      filename:
+        type: string
+    type: object
+  handler.DeleteFileResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.EncryptedFileResponse'
+      message:
+        type: string
+    type: object
+  handler.ListFilesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/schemas.EncryptedFileResponse'
+        type: array
+      message:
+        type: string
+    type: object
+  handler.ShowFileResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.EncryptedFileResponse'
+      message:
+        type: string
+    type: object
+  schemas.EncryptedFileResponse:
+    properties:
+      createdAt:
+        description: AnonymizedFile AnonymizedFile     `bson:"anonymized_file"`
+        type: string
+      data:
+        items:
+          type: integer
+        type: array
+      deletedAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -61,6 +108,116 @@ paths:
       summary: Upload a public key
       tags:
       - Encryption
+  /files:
+    delete:
+      description: deletes a file
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.DeleteFileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.DeleteFileResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Delete file
+      tags:
+      - Files
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all encrypted files
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListFilesResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get all encrypted files
+      tags:
+      - Files
+  /files/by_name:
+    get:
+      description: Provide the file data
+      parameters:
+      - description: filename to find
+        in: query
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ShowFileResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Find file by name
+      tags:
+      - Files
+  /files/by_username:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of encrypted files by username
+      parameters:
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ListFilesResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get encrypted files by username
+      tags:
+      - Files
   /saved_file:
     post:
       consumes:
@@ -101,7 +258,7 @@ paths:
       parameters:
       - description: File
         in: formData
-        name: file
+        name: arquivo
         required: true
         type: file
       produces:

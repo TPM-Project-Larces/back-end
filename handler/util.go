@@ -3,12 +3,15 @@ package handler
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 
+	"github.com/TPM-Project-Larces/back-end.git/config"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func response(ctx *gin.Context, code int, message string, err error) {
@@ -70,4 +73,25 @@ func sendFile(fileName string, url string) error {
 	} else {
 		return errors.New("file not sent")
 	}
+}
+
+var (
+	db *mongo.Database
+)
+
+func Init() error {
+	var err error
+
+	// Initialize MongoDB
+	db, err = config.CreateMongoDBDatabase()
+
+	if err != nil {
+		return fmt.Errorf("error initializing mongodb: %v", err)
+	}
+
+	return nil
+}
+
+func GetMongoDB() *mongo.Database {
+	return db
 }

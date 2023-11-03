@@ -15,14 +15,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/decrypt_file": {
+        "/encryption/decrypt_file": {
             "post": {
                 "description": "Provide the filename to decrypt",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Server operations"
+                    "Encryption"
                 ],
                 "summary": "Decrypt a file",
                 "parameters": [
@@ -47,8 +47,46 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "404": {
-                        "description": "not_found",
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/encryption/saved_file": {
+            "post": {
+                "description": "Save a file to encrypt",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Encryption"
+                ],
+                "summary": "Save file",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "file_saved",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
                         "schema": {
                             "type": "string"
                         }
@@ -62,9 +100,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/saved_file": {
+        "/encryption/upload_file": {
             "post": {
-                "description": "upload a file to encrypt",
+                "description": "Upload a file to encrypt",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -72,8 +110,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server operations"
+                    "Encryption"
                 ],
+                "summary": "Upload file",
                 "parameters": [
                     {
                         "type": "file",
@@ -96,12 +135,6 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "404": {
-                        "description": "not_found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     "500": {
                         "description": "internal_server_error",
                         "schema": {
@@ -111,9 +144,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/upload_file": {
+        "/encryption/upload_key": {
             "post": {
-                "description": "upload a file to encrypt",
+                "description": "Uploads a public key",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -121,57 +154,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Server operations"
+                    "Encryption"
                 ],
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "File",
-                        "name": "file",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "file_uploaded",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "bad_request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "not_found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/upload_key": {
-            "post": {
-                "description": "uploads a public key",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Server operations"
-                ],
+                "summary": "Upload key",
                 "parameters": [
                     {
                         "type": "file",
@@ -194,12 +179,6 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "404": {
-                        "description": "not_found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
                     "500": {
                         "description": "internal_server_error",
                         "schema": {
@@ -214,12 +193,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0.0",
 	Host:             "",
-	BasePath:         "",
+	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Server API",
+	Description:      "Server Operations",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

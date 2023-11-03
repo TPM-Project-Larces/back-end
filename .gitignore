@@ -1,8 +1,9 @@
 # IDE Files
 .idea/
 
-# Encrypted Files
+# Encrypted/Decrypted Files
 encrypted_files/
+decrypted_files/
 
 # Key Files
 key/

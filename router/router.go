@@ -1,16 +1,20 @@
 package router
 
 import (
+	docs "github.com/TPM-Project-Larces/back-end.git/docs"
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func Initialize() {
-	// Initialize Router
+	basePath := "/"
+	docs.SwaggerInfo.BasePath = basePath
+
 	router := gin.Default()
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
-	// Initialize Routes
-	initializeRoutes(router)
+	encryptionRoutes(router, basePath, "encryption/")
 
-	// Rodar a nossa API
-	router.Run(":3000") //listen and serve on 0.0.0.0:3000
+	router.Run(":5000")
 }

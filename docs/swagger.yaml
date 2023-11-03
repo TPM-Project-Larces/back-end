@@ -1,7 +1,11 @@
+basePath: /
 info:
   contact: {}
+  description: Server Operations
+  title: Server API
+  version: 1.0.0
 paths:
-  /decrypt_file:
+  /encryption/decrypt_file:
     post:
       description: Provide the filename to decrypt
       parameters:
@@ -21,22 +25,47 @@ paths:
           description: bad_request
           schema:
             type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
         "500":
           description: internal_server_error
           schema:
             type: string
       summary: Decrypt a file
       tags:
-      - Server operations
-  /saved_file:
+      - Encryption
+  /encryption/saved_file:
     post:
       consumes:
       - multipart/form-data
-      description: upload a file to encrypt
+      description: Save a file to encrypt
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: file_saved
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Save file
+      tags:
+      - Encryption
+  /encryption/upload_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file to encrypt
       parameters:
       - description: File
         in: formData
@@ -54,53 +83,18 @@ paths:
           description: bad_request
           schema:
             type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
         "500":
           description: internal_server_error
           schema:
             type: string
+      summary: Upload file
       tags:
-      - Server operations
-  /upload_file:
+      - Encryption
+  /encryption/upload_key:
     post:
       consumes:
       - multipart/form-data
-      description: upload a file to encrypt
-      parameters:
-      - description: File
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: file_uploaded
-          schema:
-            type: string
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      tags:
-      - Server operations
-  /upload_key:
-    post:
-      consumes:
-      - multipart/form-data
-      description: uploads a public key
+      description: Uploads a public key
       parameters:
       - description: File
         in: formData
@@ -118,14 +112,11 @@ paths:
           description: bad_request
           schema:
             type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
         "500":
           description: internal_server_error
           schema:
             type: string
+      summary: Upload key
       tags:
-      - Server operations
+      - Encryption
 swagger: "2.0"

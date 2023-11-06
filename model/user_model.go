@@ -27,3 +27,4 @@ type User struct {
 	Contact     Contact            `bson:"contact"`
 	Address     Address            `bson:"address"`
 }
+

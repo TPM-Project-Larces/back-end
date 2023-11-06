@@ -18,6 +18,11 @@ definitions:
       phone:
         type: string
     type: object
+  schemas.AuthResponse:
+    properties:
+      message:
+        type: string
+    type: object
   schemas.CreateUserRequest:
     properties:
       address:
@@ -62,6 +67,13 @@ definitions:
         items:
           $ref: '#/definitions/schemas.UserResponse'
         type: array
+    type: object
+  schemas.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
     type: object
   schemas.ShowUserResponse:
     properties:
@@ -127,6 +139,36 @@ info:
   title: Server API
   version: 1.0.0
 paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.AuthResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - Auth
   /encryption/decrypt_file:
     post:
       description: Provide the filename to decrypt
@@ -277,6 +319,12 @@ paths:
       consumes:
       - application/json
       description: Get a list of all users
+      parameters:
+      - description: Bearer JWT token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:

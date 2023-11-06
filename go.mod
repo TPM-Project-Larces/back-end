@@ -1,4 +1,4 @@
-module github.com/TPM-Project-Larces/agent.git
+module github.com/TPM-Project-Larces/back-end.git
 
 go 1.18
 

@@ -1,6 +1,9 @@
 package main
 
-import "github.com/TPM-Project-Larces/back-end.git/router"
+import (
+	"github.com/TPM-Project-Larces/back-end.git/config"
+	"github.com/TPM-Project-Larces/back-end.git/router"
+)
 
 // @title Server API
 // @description Server Operations
@@ -14,5 +17,9 @@ import "github.com/TPM-Project-Larces/back-end.git/router"
 //
 // @BasePath /
 func main() {
-	router.Initialize()
+	// Initailize Database
+	config.DatabaseInitialize()
+
+	// Initailize Routes
+	router.RouterInitialize()
 }

@@ -1,4 +1,126 @@
 basePath: /
+definitions:
+  model.Address:
+    properties:
+      city:
+        type: string
+      state:
+        type: string
+      street:
+        type: string
+      zipcode:
+        type: string
+    type: object
+  model.Contact:
+    properties:
+      celphone:
+        type: string
+      phone:
+        type: string
+    type: object
+  schemas.CreateUserRequest:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      contact:
+        $ref: '#/definitions/model.Contact'
+      cpf:
+        type: string
+      dateOfBirth:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  schemas.CreateUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
+  schemas.DeleteUserRequest:
+    properties:
+      username:
+        type: string
+    type: object
+  schemas.DeleteUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
+  schemas.ListUsersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/schemas.UserResponse'
+        type: array
+    type: object
+  schemas.ShowUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+    type: object
+  schemas.UpdateUserRequest:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      contact:
+        $ref: '#/definitions/model.Contact'
+      cpf:
+        type: string
+      dateOfBirth:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  schemas.UpdateUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
+  schemas.UserResponse:
+    properties:
+      address:
+        $ref: '#/definitions/model.Address'
+      contact:
+        $ref: '#/definitions/model.Contact'
+      cpf:
+        type: string
+      createdAt:
+        type: string
+      dateOfBirth:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
 info:
   contact: {}
   description: Server Operations
@@ -119,4 +241,150 @@ paths:
       summary: Upload key
       tags:
       - Encryption
+  /user:
+    delete:
+      description: Deletes a user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.DeleteUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.DeleteUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Delete user
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListUsersResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get all users
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.CreateUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - User
+    put:
+      description: Updates a user
+      parameters:
+      - description: User's username
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: User data to Update
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.UpdateUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: user_not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Update user
+      tags:
+      - User
+  /user/username:
+    get:
+      description: Provide the user data
+      parameters:
+      - description: User`s username to find
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ShowUserResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Find user by username
+      tags:
+      - User
 swagger: "2.0"

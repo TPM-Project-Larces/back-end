@@ -48,7 +48,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /decrypt_file:
+  /encryption/decrypt_file:
     post:
       description: Provide the filename to decrypt
       parameters:
@@ -77,6 +77,72 @@ paths:
           schema:
             type: string
       summary: Decrypt a file
+      tags:
+      - Encryption
+  /encryption/upload_encrypted_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload an encrypted file
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: file_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Upload encrypted file
+      tags:
+      - Encryption
+  /encryption/upload_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: upload a file to encrypt
+      parameters:
+      - description: File
+        in: formData
+        name: arquivo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: file_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Upload file
       tags:
       - Encryption
   /encryption/upload_key:
@@ -218,68 +284,4 @@ paths:
       summary: Get encrypted files by username
       tags:
       - Files
-  /saved_file:
-    post:
-      consumes:
-      - multipart/form-data
-      description: upload a file to encrypt
-      parameters:
-      - description: File
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: file_uploaded
-          schema:
-            type: string
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      tags:
-      - Server operations
-  /upload_file:
-    post:
-      consumes:
-      - multipart/form-data
-      description: upload a file to encrypt
-      parameters:
-      - description: File
-        in: formData
-        name: arquivo
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: file_uploaded
-          schema:
-            type: string
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      tags:
-      - Server operations
 swagger: "2.0"

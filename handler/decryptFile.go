@@ -16,7 +16,7 @@ import (
 // @Failure 400 {string} string "bad_request"
 // @Failure 404 {string} string "file_not_found"
 // @Failure 500 {string} string "internal_server_error"
-// @Router /decrypt_file [post]
+// @Router /encryption/decrypt_file [post]
 func DecryptFile(ctx *gin.Context) {
 	ctx.Request.ParseMultipartForm(10 << 20)
 

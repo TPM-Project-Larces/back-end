@@ -16,10 +16,9 @@ import (
 
 // @BasePath /
 
-// @Summary upload file
-
+// @Summary Upload file
 // @Description upload a file to encrypt
-// @Tags Server operations
+// @Tags Encryption
 // @Accept multipart/form-data
 // @Produce json
 // @Param arquivo formData file true "File"
@@ -27,7 +26,7 @@ import (
 // @Failure 400 {string} string "bad_request"
 // @Failure 404 {string} string "not_found"
 // @Failure 500 {string} string "internal_server_error"
-// @Router /upload_file [post]
+// @Router /encryption/upload_file [post]
 func UploadFile(ctx *gin.Context) {
 	ctx.Request.ParseMultipartForm(10 << 20)
 

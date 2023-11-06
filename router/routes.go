@@ -12,7 +12,7 @@ func encryptionRoutes(router *gin.Engine, basePath string, pathResource string) 
 		encryption.POST("/upload_file", handler.UploadFile)
 		encryption.POST("/upload_key", handler.UploadKey)
 		encryption.POST("/decrypt_file", handler.DecryptFile)
-		encryption.POST("/saved_file", handler.SavedFile)
+		encryption.POST("/upload_encrypted_file", handler.SavedFile)
 	}
 
 	v3 := router.Group(basePath)

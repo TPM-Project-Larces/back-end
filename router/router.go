@@ -16,6 +16,7 @@ func RouterInitialize() {
 
 	encryptionRoutes(router, basePath, "encryption/")
 	userRoutes(router, basePath, "user/")
+	authRoutes(router, basePath, "auth/")
 
 	router.Run(":5000")
 }

@@ -16,10 +16,17 @@ import (
 // @Tags User
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer JWT token" @in header
 // @Success 200 {object} schemas.ListUsersResponse
 // @Failure 500 {string} string "internal_server_error"
 // @Router /user [get]
 func GetUsers(ctx *gin.Context) {
+	_, err := MiddlewaveVerifyToken(ctx)
+	if err != nil {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
+
 	userCollection := config.GetMongoDB().Collection("user")
 
 	search, err := userCollection.Find(ctx, bson.M{})
@@ -57,6 +64,11 @@ func GetUsers(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /user/username [get]
 func GetUserByUsername(ctx *gin.Context) {
+	_, err := MiddlewaveVerifyToken(ctx)
+	if err != nil {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
 
 	username := ctx.Query("username")
 
@@ -65,7 +77,7 @@ func GetUserByUsername(ctx *gin.Context) {
 	filter := bson.M{"username": username}
 
 	var result model.User
-	err := userCollection.FindOne(context.Background(), filter).Decode(&result)
+	err = userCollection.FindOne(context.Background(), filter).Decode(&result)
 	if err != nil {
 		response(ctx, 400, "bad_request", err)
 		return
@@ -125,7 +137,12 @@ func CreateUser(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /user [put]
 func UpdateUser(ctx *gin.Context) {
-
+	_, err := MiddlewaveVerifyToken(ctx)
+	if err != nil {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
+	
 	username := ctx.Query("username")
 
 	request := schemas.UpdateUserRequest{}
@@ -168,6 +185,12 @@ func UpdateUser(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /user [delete]
 func DeleteUser(ctx *gin.Context) {
+	_, err := MiddlewaveVerifyToken(ctx)
+	if err != nil {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
+
 	request := schemas.DeleteUserRequest{}
 	ctx.BindJSON(&request)
 
@@ -180,7 +203,7 @@ func DeleteUser(ctx *gin.Context) {
 	var deletedUser model.User
 	filter := bson.M{"username": username.Username}
 
-	err := collection.FindOneAndDelete(context.Background(), filter).Decode(&deletedUser)
+	err = collection.FindOneAndDelete(context.Background(), filter).Decode(&deletedUser)
 	if err != nil {
 		response(ctx, 500, "internal_server_error", err)
 		return

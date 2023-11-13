@@ -1,4 +1,5 @@
 .PHONY: default run build test docs clean
+
 # Variables
 APP_NAME=back-end
 
@@ -10,7 +11,7 @@ run:
 run-with-docs:
 	@go mod tidy
 	@swag init
-	@sudo go run main.go
+	@go run main.go
 build:
 	@go build -o $(APP_NAME) main.go
 test:

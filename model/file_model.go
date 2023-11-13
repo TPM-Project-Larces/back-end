@@ -1,4 +1,4 @@
-package schemas
+package model
 
 import (
 	"time"
@@ -14,16 +14,6 @@ type EncryptedFile struct {
 	LocallyEncrypted bool               `bson:"locally_encrypted"`
 	//AnonymizedFile AnonymizedFile     `bson:"anonymized_file"`
 	CreatedAt time.Time `bson:"created_at"`
-}
-
-type EncryptedFileResponse struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Username string             `bson:"username"`
-	Name     string             `bson:"name"`
-	Data     []byte             `bson:"data"`
-	//AnonymizedFile AnonymizedFile     `bson:"anonymized_file"`
-	CreatedAt time.Time  `bson:"created_at"`
-	DeletedAt *time.Time `bson:"deleted_at,omitempty"`
 }
 
 /*type AnonymizedFile struct {

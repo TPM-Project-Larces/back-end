@@ -47,8 +47,46 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "404": {
-                        "description": "file_not_found",
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/encryption/upload_key": {
+            "post": {
+                "description": "Uploads a public key",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Encryption"
+                ],
+                "summary": "Upload key",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "key_uploaded",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
                         "schema": {
                             "type": "string"
                         }
@@ -62,9 +100,176 @@ const docTemplate = `{
                 }
             }
         },
-        "/encryption/upload_encrypted_file": {
+        "/file": {
+            "get": {
+                "description": "Get a list of all encrypted files",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "Get all encrypted files",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListFilesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "deletes a file",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "Delete file",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.DeleteFileRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.DeleteFileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/by_name": {
+            "get": {
+                "description": "Provide the file data",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "Find file by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filename to find",
+                        "name": "filename",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ShowFileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/by_username": {
+            "get": {
+                "description": "Get a list of encrypted files by username",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "File"
+                ],
+                "summary": "Get encrypted files by username",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username",
+                        "name": "username",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListFilesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/file/upload_encrypted_file": {
             "post": {
-                "description": "upload an encrypted file",
+                "description": "Upload a encrypted file",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -72,7 +277,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Encryption"
+                    "File"
                 ],
                 "summary": "Upload encrypted file",
                 "parameters": [
@@ -86,7 +291,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "file_uploaded",
+                        "description": "file_saved",
                         "schema": {
                             "type": "string"
                         }
@@ -112,9 +317,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/encryption/upload_file": {
+        "/file/upload_file": {
             "post": {
-                "description": "upload a file to encrypt",
+                "description": "Upload a file to encrypt",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -122,7 +327,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Encryption"
+                    "File"
                 ],
                 "summary": "Upload file",
                 "parameters": [
@@ -162,37 +367,76 @@ const docTemplate = `{
                 }
             }
         },
-        "/encryption/upload_key": {
-            "post": {
-                "description": "Uploads a public key",
+        "/user": {
+            "get": {
+                "description": "Get a list of all users",
                 "consumes": [
-                    "multipart/form-data"
+                    "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Encryption"
+                    "User"
                 ],
-                "summary": "Upload a public key",
+                "summary": "Get all users",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.ListUsersResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal_server_error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates a user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user",
                 "parameters": [
                     {
-                        "type": "file",
-                        "description": "File",
-                        "name": "file",
-                        "in": "formData",
+                        "type": "string",
+                        "description": "User's username",
+                        "name": "username",
+                        "in": "query",
                         "required": true
+                    },
+                    {
+                        "description": "User data to Update",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.UpdateUserRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "key_uploaded",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/schemas.UpdateUserResponse"
                         }
                     },
                     "400": {
                         "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "user_not_found",
                         "schema": {
                             "type": "string"
                         }
@@ -204,11 +448,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/files": {
-            "get": {
-                "description": "Get a list of all encrypted files",
+            },
+            "post": {
+                "description": "Create a new user",
                 "consumes": [
                     "application/json"
                 ],
@@ -216,14 +458,31 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Files"
+                    "User"
                 ],
-                "summary": "Get all encrypted files",
+                "summary": "Create user",
+                "parameters": [
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.CreateUserRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.ListFilesResponse"
+                            "$ref": "#/definitions/schemas.CreateUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "bad_request",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "500": {
@@ -235,14 +494,14 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "deletes a file",
+                "description": "Deletes a user",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Files"
+                    "User"
                 ],
-                "summary": "Delete file",
+                "summary": "Delete user",
                 "parameters": [
                     {
                         "description": "Request body",
@@ -250,7 +509,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.DeleteFileRequest"
+                            "$ref": "#/definitions/schemas.DeleteUserRequest"
                         }
                     }
                 ],
@@ -258,7 +517,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.DeleteFileResponse"
+                            "$ref": "#/definitions/schemas.DeleteUserResponse"
                         }
                     },
                     "400": {
@@ -282,70 +541,20 @@ const docTemplate = `{
                 }
             }
         },
-        "/files/by_name": {
+        "/user/username": {
             "get": {
-                "description": "Provide the file data",
+                "description": "Provide the user data",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Files"
+                    "User"
                 ],
-                "summary": "Find file by name",
+                "summary": "Find user by username",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "filename to find",
-                        "name": "filename",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ShowFileResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "bad_request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "not_found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "internal_server_error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/files/by_username": {
-            "get": {
-                "description": "Get a list of encrypted files by username",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Files"
-                ],
-                "summary": "Get encrypted files by username",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Username",
+                        "description": "User` + "`" + `s username to find",
                         "name": "username",
                         "in": "query",
                         "required": true
@@ -355,11 +564,17 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.ListFilesResponse"
+                            "$ref": "#/definitions/schemas.ShowUserResponse"
                         }
                     },
                     "400": {
                         "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
                         "schema": {
                             "type": "string"
                         }
@@ -375,7 +590,75 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handler.DeleteFileRequest": {
+        "model.Address": {
+            "type": "object",
+            "properties": {
+                "city": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "street": {
+                    "type": "string"
+                },
+                "zipcode": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.Contact": {
+            "type": "object",
+            "properties": {
+                "celphone": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.CreateUserRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "contact": {
+                    "$ref": "#/definitions/model.Contact"
+                },
+                "cpf": {
+                    "type": "string"
+                },
+                "dateOfBirth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.CreateUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.UserResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.DeleteFileRequest": {
             "type": "object",
             "properties": {
                 "filename": {
@@ -383,7 +666,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.DeleteFileResponse": {
+        "schemas.DeleteFileResponse": {
             "type": "object",
             "properties": {
                 "data": {
@@ -394,25 +677,19 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.ListFilesResponse": {
+        "schemas.DeleteUserRequest": {
             "type": "object",
             "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/schemas.EncryptedFileResponse"
-                    }
-                },
-                "message": {
+                "username": {
                     "type": "string"
                 }
             }
         },
-        "handler.ShowFileResponse": {
+        "schemas.DeleteUserResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/schemas.EncryptedFileResponse"
+                    "$ref": "#/definitions/schemas.UserResponse"
                 },
                 "message": {
                     "type": "string"
@@ -445,18 +722,143 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "schemas.ListFilesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.EncryptedFileResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.ListUsersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.UserResponse"
+                    }
+                }
+            }
+        },
+        "schemas.ShowFileResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.EncryptedFileResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.ShowUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.UserResponse"
+                }
+            }
+        },
+        "schemas.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "contact": {
+                    "$ref": "#/definitions/model.Contact"
+                },
+                "cpf": {
+                    "type": "string"
+                },
+                "dateOfBirth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.UpdateUserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/schemas.UserResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.UserResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "$ref": "#/definitions/model.Address"
+                },
+                "contact": {
+                    "$ref": "#/definitions/model.Contact"
+                },
+                "cpf": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dateOfBirth": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "1.0.0",
 	Host:             "",
-	BasePath:         "",
+	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Title:            "Server API",
+	Description:      "Server Operations",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

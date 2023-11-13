@@ -7,7 +7,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func Initialize() {
+func RouterInitialize() {
 	basePath := "/"
 	docs.SwaggerInfo.BasePath = basePath
 
@@ -15,6 +15,8 @@ func Initialize() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	encryptionRoutes(router, basePath, "encryption/")
+	userRoutes(router, basePath, "user/")
+	fileRoutes(router, basePath, "file/")
 
 	router.Run(":5000")
 }

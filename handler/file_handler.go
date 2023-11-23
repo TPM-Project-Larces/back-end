@@ -156,7 +156,7 @@ func SavedFile(ctx *gin.Context) {
 		response(ctx, 500, "internal_server_error", err)
 	}
 
-	// Dividir os dados em blocos menores
+	// Split data into smaller blocks
 	maxBlockSize := 245
 	var encryptedBlocks []byte
 	for len(data) > 0 {
@@ -165,7 +165,7 @@ func SavedFile(ctx *gin.Context) {
 			blockSize = maxBlockSize
 		}
 
-		//Escreve o arquivo em blocos de bytes
+		//Writes the file in blocks of bytes
 		encryptedBlock := data[:blockSize]
 
 		encryptedBlocks = append(encryptedBlocks, encryptedBlock...)
@@ -227,7 +227,7 @@ func UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	// Verificar se um arquivo com o mesmo nome já existe no banco de dados
+	// Check if a file with the same name already exists in the database
 	name := file.Filename
 	collection := config.GetMongoDB().Collection("files")
 	existingFile := &model.EncryptedFile{}
@@ -238,7 +238,7 @@ func UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	// Abrir o arquivo de chave pública
+	// Open public key file
 	filePath := "./key/public_key.pem"
 	filePublicKey, err := os.Open(filePath)
 	if err != nil {
@@ -247,7 +247,7 @@ func UploadFile(ctx *gin.Context) {
 	}
 	defer filePublicKey.Close()
 
-	// Ler o arquivo de chave pública
+	// Read public key
 	publicKeyData, err := ioutil.ReadAll(filePublicKey)
 	if err != nil {
 		response(ctx, 500, "internal_server_error", err)
@@ -274,7 +274,7 @@ func UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	// Abrir o arquivo diretamente sem salvá-lo no disco
+	// Open the file directly without saving it to disk
 	uploadedFile, err := file.Open()
 	if err != nil {
 		response(ctx, 500, "internal_server_error", err)
@@ -288,7 +288,7 @@ func UploadFile(ctx *gin.Context) {
 		return
 	}
 
-	// Dividir os dados em blocos menores (tamanho máximo de bloco para criptografia RSA)
+	// Split data into smaller blocks (maximum block size for RSA encryption)
 	maxBlockSize := 245
 	var encryptedBlocks []byte
 	for len(data) > 0 {
@@ -297,7 +297,7 @@ func UploadFile(ctx *gin.Context) {
 			blockSize = maxBlockSize
 		}
 
-		// Criptografar o bloco e adicionar à lista de blocos criptografados
+		//Encrypt the block and add to the list of encrypted blocks
 		encryptedBlock, err := rsa.EncryptPKCS1v15(rand.Reader, publicKeyRsa, data[:blockSize])
 		if err != nil {
 			response(ctx, 500, "internal_server_error", err)
@@ -367,7 +367,7 @@ func DeleteFile(ctx *gin.Context) {
 
 	filter := bson.M{"name": file.Filename}
 
-	// Busque o usuário antes de excluí-lo
+	// Search for the user before deleting them
 	var deletedFile model.EncryptedFile
 	err := collection.FindOneAndDelete(context.Background(), filter).Decode(&deletedFile)
 
@@ -376,6 +376,5 @@ func DeleteFile(ctx *gin.Context) {
 		return
 	}
 
-	// Se o usuário foi encontrado e excluído com sucesso, retorne os detalhes do usuário excluído
 	ctx.JSON(200, gin.H{"message": "file_deleted", "deletedFile": deletedFile})
 }

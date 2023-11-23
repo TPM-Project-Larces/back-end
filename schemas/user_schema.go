@@ -41,7 +41,7 @@ type UserResponse struct {
 	CPF         string             `bson:"cpf"`
 	Name        string             `bson:"name"`
 	Username    string             `bson:"username"`
-	DateOfBirth string             `bson:"date_of_birth"`
+	DateOfBirth time.Time          `bson:"date_of_birth"`
 	Email       string             `bson:"email"`
 	Password    string             `bson:"password"`
 	Contact     model.Contact      `bson:"contact"`

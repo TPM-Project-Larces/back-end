@@ -1,10 +1,16 @@
 package handler
 
 import (
+	"context"
+	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 
+	"github.com/TPM-Project-Larces/back-end.git/config"
+	"github.com/TPM-Project-Larces/back-end.git/model"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // @BasePath /
@@ -27,13 +33,38 @@ func UploadKey(ctx *gin.Context) {
 		return
 	}
 
-	err = ctx.SaveUploadedFile(file, "./key/"+file.Filename)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+	destDirectory := "./key/"
+
+	if err := os.MkdirAll(destDirectory, os.ModePerm); err != nil {
+		response(ctx, 500, "internal_server_error", err)
 		return
 	}
 
-	response(ctx, 200, "keys_generated", nil)
+	destPath := filepath.Join(destDirectory, file.Filename)
+
+	if err := ctx.SaveUploadedFile(file, destPath); err != nil {
+		response(ctx, 500, "internal_server_error", err)
+		return
+	}
+
+	fileContent, err := ioutil.ReadFile(destPath)
+	if err != nil {
+		response(ctx, 500, "internal_server_error", err)
+		return
+	}
+
+	// Agora, fileContent contém o conteúdo do arquivo em bytes
+	keyBytes := fileContent
+
+	collection := config.GetMongoDB().Collection("key")
+	key := model.PublicKey{Username: "username", KeyBytes: keyBytes}
+	_, err = collection.InsertOne(context.Background(), key)
+	if err != nil {
+		response(ctx, 400, "bad_request", err)
+		return
+	}
+
+	response(ctx, 200, "key_created", nil)
 }
 
 // @BasePath /
@@ -51,21 +82,35 @@ func DecryptFile(ctx *gin.Context) {
 
 	nameFile := ctx.PostForm("filename")
 
-	uploadDir := "./encrypted_files"
-	filePath := filepath.Join(uploadDir, nameFile)
-	_, err := os.Stat(filePath)
+	fmt.Println("name: " + nameFile)
+	collection := config.GetMongoDB().Collection("files")
 
-	if nameFile == "" || os.IsNotExist(err) {
-		response(ctx, 404, "file_not_found", nil)
-		return
-	} else if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+	filter := bson.M{"name": nameFile}
+
+	var result model.EncryptedFile
+
+	err := collection.FindOne(context.Background(), filter).Decode(&result)
+
+	if err != nil {
+		response(ctx, 400, "bad_request", err)
 		return
 	}
 
+	fileContent := result.Data
+
+	// Caminho do arquivo a ser descriptografado
+	decryptedFilePath := "./" + result.Name
+
+	err = ioutil.WriteFile(decryptedFilePath, fileContent, 0644)
+	if err != nil {
+		response(ctx, 500, "internal_server_error", err)
+		return
+	}
+
+	// Enviar o arquivo para outra API
 	url := "http://localhost:3000/encryption/decrypt_file/"
-	if err := sendFile(filePath, url); err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+	if err := sendFile(decryptedFilePath, url); err != nil {
+		response(ctx, 500, "internal_server_error", err)
 		return
 	}
 

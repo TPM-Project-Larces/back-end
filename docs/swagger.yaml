@@ -114,6 +114,11 @@ definitions:
       data:
         $ref: '#/definitions/schemas.UserResponse'
     type: object
+  schemas.StringData:
+    properties:
+      data:
+        type: string
+    type: object
   schemas.UpdateUserRequest:
     properties:
       address:
@@ -198,6 +203,40 @@ paths:
           schema:
             type: string
       summary: Decrypt a file
+      tags:
+      - Encryption
+  /encryption/search_file:
+    post:
+      consumes:
+      - application/json
+      description: Search file
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.StringData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ShowFileResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Search file
       tags:
       - Encryption
   /encryption/upload_key:

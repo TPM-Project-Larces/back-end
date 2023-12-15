@@ -12,5 +12,6 @@ func encryptionRoutes(router *gin.Engine, basePath string, pathResource string) 
 
 		encryption.POST("/upload_key", handler.UploadKey)
 		encryption.POST("/decrypt_file", handler.DecryptFile)
+		encryption.POST("/search_file", handler.SearchFile)
 	}
 }

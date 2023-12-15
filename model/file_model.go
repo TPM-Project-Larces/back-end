@@ -11,6 +11,7 @@ type EncryptedFile struct {
 	Username         string             `bson:"username"`
 	Name             string             `bson:"name"`
 	Data             []byte             `bson:"data"`
+	Size             int                `bson:"size"`
 	LocallyEncrypted bool               `bson:"locally_encrypted"`
 	//AnonymizedFile AnonymizedFile     `bson:"anonymized_file"`
 	CreatedAt time.Time `bson:"created_at"`

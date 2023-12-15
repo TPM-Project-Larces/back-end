@@ -232,7 +232,7 @@ func UploadFile(ctx *gin.Context) {
 	collection := config.GetMongoDB().Collection("files")
 	existingFile := &model.EncryptedFile{}
 	err = collection.FindOne(context.Background(), bson.M{"name": name}).Decode(existingFile)
-
+	fmt.Println(name)
 	if err == nil {
 		response(ctx, 400, "bad_request", err)
 		return
@@ -287,7 +287,7 @@ func UploadFile(ctx *gin.Context) {
 		response(ctx, 500, "internal_server_error", err)
 		return
 	}
-
+	size := len(data)
 	// Split data into smaller blocks (maximum block size for RSA encryption)
 	maxBlockSize := 245
 	var encryptedBlocks []byte
@@ -306,6 +306,7 @@ func UploadFile(ctx *gin.Context) {
 		encryptedBlocks = append(encryptedBlocks, encryptedBlock...)
 		data = data[blockSize:]
 	}
+	fmt.Println("aaa", len(encryptedBlocks))
 
 	tempDir := "./encrypted_files"
 	err = os.MkdirAll(tempDir, os.ModePerm)
@@ -331,7 +332,7 @@ func UploadFile(ctx *gin.Context) {
 		name := file.Filename
 		data := encryptedBlocks
 		collection := config.GetMongoDB().Collection("files")
-		file := model.EncryptedFile{Username: "username", Name: name, Data: data, LocallyEncrypted: false}
+		file := model.EncryptedFile{Username: "username", Name: name, Data: data, Size: len(encryptedBlocks), LocallyEncrypted: false}
 		_, err := collection.InsertOne(context.Background(), file)
 		if err != nil {
 			response(ctx, 400, "bad_request", err)
@@ -341,6 +342,10 @@ func UploadFile(ctx *gin.Context) {
 	}
 
 	response(ctx, 200, "file_uploaded", nil)
+	fmt.Println("Tamanho do arquivo:", size, "bytes")
+
+	fmt.Println("Tamanho do arquivo encritado:", len(encryptedBlocks), "bytes")
+
 }
 
 // @BasePath /

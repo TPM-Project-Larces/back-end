@@ -32,3 +32,7 @@ type DeleteFileResponse struct {
 	Message string                `bson:"message"`
 	Data    EncryptedFileResponse `bson:"data"`
 }
+
+type StringData struct {
+	Data string `json:"data"`
+}

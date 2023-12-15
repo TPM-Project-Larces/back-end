@@ -2,6 +2,7 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/TPM-Project-Larces/back-end.git/schemas"
 	"github.com/gin-gonic/gin"
 )
 
@@ -68,14 +70,42 @@ func sendFile(fileName string, url string) error {
 	}
 	defer response.Body.Close()
 	// Remove the file if it's not the public key file
-	if fileName != "./key/public_key.pem" {
-		os.Remove(fileName)
-	}
+	//if fileName != "./key/public_key.pem" {
+	//	os.Remove(fileName)
+	//}
 
 	// Check the HTTP response status code
 	if response.StatusCode == http.StatusOK {
 		return nil
 	} else {
 		return errors.New("file not sentt")
+	}
+}
+
+func sendString(data string, url string) error {
+	stringData := schemas.StringData{Data: data}
+
+	requestBody, err := json.Marshal(stringData)
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json") // Define o tipo de conteúdo como JSON
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusOK {
+		return nil
+	} else {
+		return errors.New("string not sent")
 	}
 }

@@ -2,9 +2,14 @@ package config
 
 import (
 	"context"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+)
+
+var (
+	db *mongo.Database
 )
 
 func CreateMongoDBDatabase() (*mongo.Database, error) {
@@ -28,4 +33,21 @@ func CreateMongoDBDatabase() (*mongo.Database, error) {
 	database := client.Database("server_database")
 
 	return database, nil
+}
+
+func DatabaseInitialize() error {
+	var err error
+
+	// Initialize MongoDB
+	db, err = CreateMongoDBDatabase()
+
+	if err != nil {
+		return fmt.Errorf("error initializing mongodb: %v", err)
+	}
+
+	return nil
+}
+
+func GetMongoDB() *mongo.Database {
+	return db
 }

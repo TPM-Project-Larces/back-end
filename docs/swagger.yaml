@@ -319,6 +319,7 @@ paths:
       consumes:
       - application/json
       description: Get a list of all users
+
       parameters:
       - description: Bearer JWT token
         in: header

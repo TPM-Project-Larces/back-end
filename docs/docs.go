@@ -52,6 +52,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "internal_server_error",
                         "schema": {
@@ -89,6 +95,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "bad_request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "not_found",
                         "schema": {
                             "type": "string"
                         }
@@ -181,6 +193,12 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
+                    "404": {
+                        "description": "not_found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
                     "500": {
                         "description": "internal_server_error",
                         "schema": {
@@ -247,6 +265,7 @@ const docTemplate = `{
                     "User"
                 ],
                 "summary": "Get all users",
+
                 "parameters": [
                     {
                         "type": "string",
@@ -256,6 +275,7 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
+
                 "responses": {
                     "200": {
                         "description": "OK",

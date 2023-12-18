@@ -57,6 +57,7 @@
         "/encryption/decrypt_file": {
             "post": {
                 "description": "Provide the filename to decrypt",
+
                 "produces": [
                     "application/json"
                 ],

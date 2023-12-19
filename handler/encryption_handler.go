@@ -1,13 +1,14 @@
 package handler
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
-	"encoding/pem"
+	"context"
+	"github.com/TPM-Project-Larces/back-end.git/config"
+	"github.com/TPM-Project-Larces/back-end.git/model"
+	"go.mongodb.org/mongo-driver/bson"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,201 +25,79 @@ import (
 // @Failure 500 {string} string "internal_server_error"
 // @Router /encryption/upload_key [post]
 func UploadKey(ctx *gin.Context) {
+	username, err := MiddlewaveVerifyToken(ctx)
+	if err != nil || username == "" {
+		response(ctx, 403, "invalid_token", nil)
+		return
+	}
+
 	ctx.Request.ParseMultipartForm(10 << 20)
 
 	file, err := ctx.FormFile("arquivo")
 	if err != nil {
-		response(ctx, 400, "bad_request", err)
+		response(ctx, 400, "bad_request", nil)
 		return
 	}
 
-	err = ctx.SaveUploadedFile(file, "./key/"+file.Filename)
+	tempDir := "./key"
+	err = os.MkdirAll(tempDir, os.ModePerm)
 	if err != nil {
 		response(ctx, 500, "internal_server_error", nil)
 		return
 	}
 
-	response(ctx, 200, "keys_generated", nil)
-}
-
-// @BasePath /
-// @Summary Upload file
-// @Description Upload a file to encrypt
-// @Tags Encryption
-// @Accept multipart/form-data
-// @Produce json
-// @Param file formData file true "File"
-// @Success 200 {string} string "file_uploaded"
-// @Failure 400 {string} string "bad_request"
-// @Failure 500 {string} string "internal_server_error"
-// @Router /encryption/upload_file [post]
-func UploadFile(ctx *gin.Context) {
-	ctx.Request.ParseMultipartForm(10 << 20)
-
-	file, err := ctx.FormFile("arquivo")
+	tempFile, err := os.Create(tempDir + "/" + file.Filename)
 	if err != nil {
 		response(ctx, 500, "internal_server_error", nil)
 		return
 	}
+	defer tempFile.Close()
 
-	// Open public key file
-	filePath := "./key/public_key.pem"
-	filePublicKey, err := os.Open(filePath)
+	err = ctx.SaveUploadedFile(file, tempFile.Name())
 	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-	defer filePublicKey.Close()
-
-	// Reads public key file
-	publicKeyData, err := ioutil.ReadAll(filePublicKey)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+		response(ctx, 500, "internal_server_error", err)
 		return
 	}
 
-	blockPublicKey, _ := pem.Decode(publicKeyData)
+	publicKeyPEM, err := ioutil.ReadFile(tempFile.Name())
 	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+		response(ctx, 500, "internal_server_error", err)
 		return
 	}
 
-	publicKeyData = blockPublicKey.Bytes
+	keyCollection := config.GetMongoDB().Collection("key")
 
-	publicKey, err := x509.ParsePKIXPublicKey(publicKeyData)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-
-	publicKeyRsa := publicKey.(*rsa.PublicKey)
-
-	// Open the file directly without saving it to disk
-	uploadedFile, err := file.Open()
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-	defer uploadedFile.Close()
-
-	data, err := ioutil.ReadAll(uploadedFile)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-
-	// Split data into smaller blocks (maximum block size for RSA encryption)
-	maxBlockSize := 245
-	var encryptedBlocks []byte
-	for len(data) > 0 {
-		blockSize := len(data)
-		if blockSize > maxBlockSize {
-			blockSize = maxBlockSize
-		}
-
-		// Encrypt the block and add to the list of encrypted blocks
-		encryptedBlock, err := rsa.EncryptPKCS1v15(rand.Reader, publicKeyRsa, data[:blockSize])
+	// Checks if the user has a key in database
+	existingKey := model.PublicKey{}
+	err = keyCollection.FindOne(context.Background(), bson.M{"username": username}).Decode(&existingKey)
+	if err == nil {
+		// If the user already has a key, delete the previous key
+		_, err := keyCollection.DeleteOne(context.Background(), bson.M{"username": username})
 		if err != nil {
-			response(ctx, 500, "internal_server_error", nil)
+			response(ctx, 500, "internal_server_error", err)
 			return
 		}
-		encryptedBlocks = append(encryptedBlocks, encryptedBlock...)
-		data = data[blockSize:]
 	}
 
-	tempDir := "./encrypted_files"
-	err = os.MkdirAll(tempDir, os.ModePerm)
+	key := model.PublicKey{
+		Username:  username,
+		KeyBytes:  publicKeyPEM,
+		CreatedAt: time.Now(),
+	}
+
+	_, err = keyCollection.InsertOne(context.Background(), key)
 	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+		response(ctx, 500, "key_not_created", err)
 		return
 	}
 
-	tempfile, err := os.Create(tempDir + "/" + file.Filename)
+	err = os.Remove(tempFile.Name())
 	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-	defer tempfile.Close()
-
-	err = ioutil.WriteFile(tempfile.Name(), encryptedBlocks, 0644)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+		response(ctx, 500, "internal_server_error", err)
 		return
 	}
 
-	response(ctx, 200, "file_uploaded", nil)
-}
-
-// @BasePath /
-// @Summary Save file
-// @Description Save a file to encrypt
-// @Tags Encryption
-// @Accept multipart/form-data
-// @Produce json
-// @Param file formData file true "File"
-// @Success 200 {string} string "file_saved"
-// @Failure 400 {string} string "bad_request"
-// @Failure 500 {string} string "internal_server_error"
-// @Router /encryption/saved_file [post]
-func SavedFile(ctx *gin.Context) {
-	ctx.Request.ParseMultipartForm(10 << 20)
-
-	file, err := ctx.FormFile("arquivo")
-	if err != nil {
-		response(ctx, 400, "bad_request", err)
-		return
-	}
-
-	// Open the file directly without saving it to disk
-	uploadedFile, err := file.Open()
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-	defer uploadedFile.Close()
-
-	data, err := ioutil.ReadAll(uploadedFile)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-
-	// Split data into smaller blocks
-	maxBlockSize := 245
-	var encryptedBlocks []byte
-	for len(data) > 0 {
-		blockSize := len(data)
-		if blockSize > maxBlockSize {
-			blockSize = maxBlockSize
-		}
-
-		// Write file in bytes blocks
-		encryptedBlock := data[:blockSize]
-		encryptedBlocks = append(encryptedBlocks, encryptedBlock...)
-		data = data[blockSize:]
-	}
-
-	tempDir := "./decrypted_files"
-	err = os.MkdirAll(tempDir, os.ModePerm)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-
-	tempfile, err := os.Create(tempDir + "/" + file.Filename)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-	defer tempfile.Close()
-
-	err = ioutil.WriteFile(tempfile.Name(), encryptedBlocks, 0644)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return
-	}
-
-	response(ctx, 200, "file_saved", err)
+	ctx.JSON(200, gin.H{"message": "key_uploaded", "username": username})
 }
 
 // @BasePath /
@@ -232,13 +111,19 @@ func SavedFile(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /encryption/decrypt_file [post]
 func DecryptFile(ctx *gin.Context) {
+	username, err := MiddlewaveVerifyToken(ctx)
+	if err != nil || username == "" {
+		response(ctx, 403, "invalid_token", nil)
+		return
+	}
+
 	ctx.Request.ParseMultipartForm(10 << 20)
 
 	nameFile := ctx.PostForm("filename")
 
 	uploadDir := "./encrypted_files"
 	filePath := filepath.Join(uploadDir, nameFile)
-	_, err := os.Stat(filePath)
+	_, err = os.Stat(filePath)
 
 	if nameFile == "" || os.IsNotExist(err) {
 		response(ctx, 404, "file_not_found", nil)
@@ -248,11 +133,52 @@ func DecryptFile(ctx *gin.Context) {
 		return
 	}
 
-	url := "http://localhost:3000/encryption/decrypt_file/"
-	if err := sendFile(filePath, url); err != nil {
-		response(ctx, 500, "internal_server_error", nil)
+	collection := config.GetMongoDB().Collection("files")
+
+	cursor, err := collection.Find(ctx, bson.M{"username": username, "name": nameFile})
+	if err != nil {
+		response(ctx, 500, "internal_server_error", err)
 		return
 	}
+	defer cursor.Close(ctx)
 
-	response(ctx, 200, "file_decrypted", nil)
+	if cursor.Next(ctx) {
+		var encryptedFile model.EncryptedFile
+		if err := cursor.Decode(&encryptedFile); err != nil {
+			response(ctx, 500, "internal_server_error", err)
+			return
+		}
+
+		tempFile, err := ioutil.TempFile("", "encrypted_file_*.bin")
+		if err != nil {
+			response(ctx, 500, "internal_server_error", err)
+			return
+		}
+		defer tempFile.Close()
+
+		if _, err := tempFile.Write(encryptedFile.Data); err != nil {
+			response(ctx, 500, "internal_server_error", err)
+			return
+		}
+
+		if UploadAttestation(ctx) != nil {
+			response(ctx, 500, "attestation_failed", nil)
+			return
+		}
+
+		url := "http://localhost:3000/encryption/decrypt_file/"
+		if err := sendFile(filePath, url); err != nil {
+			response(ctx, 500, "internal_server_error", nil)
+			return
+		}
+
+		if err := os.Remove(tempFile.Name()); err != nil {
+			response(ctx, 500, "internal_server_error", nil)
+		}
+
+		response(ctx, 200, "file_decrypted", nil)
+
+	} else if err := cursor.Err(); err != nil {
+		response(ctx, 500, "internal_server_error", nil)
+	}
 }

@@ -3,7 +3,6 @@ package handler
 import (
 	"bytes"
 	"errors"
-
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -29,7 +28,6 @@ func response(ctx *gin.Context, code int, message string, err error) {
 }
 
 func sendFile(fileName string, url string) error {
-
 
 	file, err := os.Open(fileName)
 	if err != nil {

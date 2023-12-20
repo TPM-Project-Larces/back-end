@@ -27,6 +27,12 @@ import (
 // @Failure 500 {string} string "internal_server_error"
 // @Router /file [get]
 func GetFiles(ctx *gin.Context) {
+	_, err := MiddlewaveVerifyToken(ctx)
+	if err != nil {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
+
 	collection := config.GetMongoDB().Collection("files")
 
 	cursor, err := collection.Find(ctx, bson.M{})
@@ -62,6 +68,11 @@ func GetFiles(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /file/by_username [get]
 func GetFilesByUsername(ctx *gin.Context) {
+	_, err := MiddlewaveVerifyToken(ctx)
+	if err != nil {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
 
 	username := ctx.Query("username")
 	if username == "" {
@@ -104,6 +115,11 @@ func GetFilesByUsername(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /file/by_name [get]
 func GetFileByName(ctx *gin.Context) {
+	_, err := MiddlewaveVerifyToken(ctx)
+	if err != nil {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
 
 	name := ctx.Query("filename")
 	fmt.Println("name: " + name)
@@ -113,7 +129,7 @@ func GetFileByName(ctx *gin.Context) {
 
 	var result model.EncryptedFile
 
-	err := collection.FindOne(context.Background(), filter).Decode(&result)
+	err = collection.FindOne(context.Background(), filter).Decode(&result)
 
 	if err != nil {
 		response(ctx, 400, "bad_request", err)
@@ -137,11 +153,25 @@ func GetFileByName(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /file/upload_encrypted_file [post]
 func SavedFile(ctx *gin.Context) {
+	username, err := MiddlewaveVerifyToken(ctx)
+	if err != nil || username == "" {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
 	ctx.Request.ParseMultipartForm(10 << 20)
 
 	file, err := ctx.FormFile("arquivo")
 	if err != nil {
 		response(ctx, 400, "bad_request", err)
+	}
+
+	// Check if a file with the same name already exists in the database
+	collection := config.GetMongoDB().Collection("files")
+	existingFile := &model.EncryptedFile{}
+	err = collection.FindOne(context.Background(), bson.M{"name": file.Filename, "username": username}).Decode(existingFile)
+	if err == nil {
+		response(ctx, 400, "bad_request", err)
+		return
 	}
 
 	//Abra o arquivo diretamente sem salvá-lo no disco
@@ -193,8 +223,7 @@ func SavedFile(ctx *gin.Context) {
 	{
 		name := file.Filename
 		data := encryptedBlocks
-		collection := config.GetMongoDB().Collection("files")
-		file := model.EncryptedFile{Username: "username", Name: name, Data: data, LocallyEncrypted: true}
+		file := model.EncryptedFile{Username: username, Name: name, Data: data, LocallyEncrypted: true}
 		_, err := collection.InsertOne(context.Background(), file)
 		if err != nil {
 			response(ctx, 400, "bad_request", err)
@@ -219,6 +248,11 @@ func SavedFile(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /file/upload_file [post]
 func UploadFile(ctx *gin.Context) {
+	username, err := MiddlewaveVerifyToken(ctx)
+	if err != nil || username == "" {
+		response(ctx, 403, "invalid_token", nil)
+		return
+	}
 	ctx.Request.ParseMultipartForm(10 << 20)
 
 	file, err := ctx.FormFile("arquivo")
@@ -231,38 +265,29 @@ func UploadFile(ctx *gin.Context) {
 	name := file.Filename
 	collection := config.GetMongoDB().Collection("files")
 	existingFile := &model.EncryptedFile{}
-	err = collection.FindOne(context.Background(), bson.M{"name": name}).Decode(existingFile)
+	err = collection.FindOne(context.Background(), bson.M{"name": name, "username": username}).Decode(existingFile)
 
 	if err == nil {
 		response(ctx, 400, "bad_request", err)
 		return
 	}
 
-	// Open public key file
-	filePath := "./key/public_key.pem"
-	filePublicKey, err := os.Open(filePath)
+	// Open public key
+	key := &model.PublicKey{}
+	keycollection := config.GetMongoDB().Collection("key")
+	err = keycollection.FindOne(context.Background(), bson.M{"_id": username}).Decode(&key)
 	if err != nil {
-		response(ctx, 500, "internal_server_error", err)
-		return
-	}
-	defer filePublicKey.Close()
-
-	// Read public key
-	publicKeyData, err := ioutil.ReadAll(filePublicKey)
-	if err != nil {
-		response(ctx, 500, "internal_server_error", err)
+		response(ctx, 400, "bad_request", err)
 		return
 	}
 
-	blockPublicKey, _ := pem.Decode(publicKeyData)
+	blockPublicKey, _ := pem.Decode(key.KeyBytes)
 	if blockPublicKey == nil {
 		response(ctx, 500, "internal_server_error", err)
 		return
 	}
 
-	publicKeyData = blockPublicKey.Bytes
-
-	publicKey, err := x509.ParsePKIXPublicKey(publicKeyData)
+	publicKey, err := x509.ParsePKIXPublicKey(blockPublicKey.Bytes)
 	if err != nil {
 		response(ctx, 500, "internal_server_error", err)
 		return
@@ -331,13 +356,19 @@ func UploadFile(ctx *gin.Context) {
 		name := file.Filename
 		data := encryptedBlocks
 		collection := config.GetMongoDB().Collection("files")
-		file := model.EncryptedFile{Username: "username", Name: name, Data: data, LocallyEncrypted: false}
+		file := model.EncryptedFile{Username: username, Name: name, Data: data, LocallyEncrypted: false}
 		_, err := collection.InsertOne(context.Background(), file)
 		if err != nil {
 			response(ctx, 400, "bad_request", err)
 			return
 		}
 		response(ctx, 200, "encrypted_file_created", nil)
+	}
+
+	err = os.Remove(file.Filename)
+	if err != nil {
+		response(ctx, 500, "internal_server_error", err)
+		return
 	}
 
 	response(ctx, 200, "file_uploaded", nil)
@@ -355,6 +386,11 @@ func UploadFile(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /file [delete]
 func DeleteFile(ctx *gin.Context) {
+	username, err := MiddlewaveVerifyToken(ctx)
+	if err != nil || username == "" {
+		response(ctx, 403, "invalid_token", err)
+		return
+	}
 	request := schemas.DeleteFileRequest{}
 	ctx.BindJSON(&request)
 
@@ -365,11 +401,11 @@ func DeleteFile(ctx *gin.Context) {
 		Filename: request.Filename,
 	}
 
-	filter := bson.M{"name": file.Filename}
+	filter := bson.M{"name": file.Filename, "username": username}
 
 	// Search for the user before deleting them
 	var deletedFile model.EncryptedFile
-	err := collection.FindOneAndDelete(context.Background(), filter).Decode(&deletedFile)
+	err = collection.FindOneAndDelete(context.Background(), filter).Decode(&deletedFile)
 
 	if err != nil {
 		response(ctx, 500, "internal_server_error", err)

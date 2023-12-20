@@ -1,4 +1,4 @@
-package schemas
+package model
 
 import (
 	"time"
@@ -6,16 +6,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type PublicKeyResponse struct {
+type Signature struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	Username  string             `bson:"username"`
 	Data      []byte             `bson:"data"`
 	CreatedAt time.Time          `bson:"created_at"`
-	DeletedAt *time.Time         `bson:"deleted_at,omitempty"`
-}
-
-type CreatePublicKeyRequest struct {
-	Username  string    `bson:"username"`
-	Data      []byte    `bson:"data"`
-	CreatedAt time.Time `bson:"created_at"`
 }

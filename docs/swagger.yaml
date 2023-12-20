@@ -49,6 +49,18 @@ definitions:
       message:
         type: string
     type: object
+  schemas.DeleteFileRequest:
+    properties:
+      filename:
+        type: string
+    type: object
+  schemas.DeleteFileResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.EncryptedFileResponse'
+      message:
+        type: string
+    type: object
   schemas.DeleteUserRequest:
     properties:
       username:
@@ -58,6 +70,33 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/schemas.UserResponse'
+      message:
+        type: string
+    type: object
+  schemas.EncryptedFileResponse:
+    properties:
+      createdAt:
+        description: AnonymizedFile AnonymizedFile     `bson:"anonymized_file"`
+        type: string
+      data:
+        items:
+          type: integer
+        type: array
+      deletedAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      username:
+        type: string
+    type: object
+  schemas.ListFilesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/schemas.EncryptedFileResponse'
+        type: array
       message:
         type: string
     type: object
@@ -73,6 +112,13 @@ definitions:
       email:
         type: string
       password:
+        type: string
+    type: object
+  schemas.ShowFileResponse:
+    properties:
+      data:
+        $ref: '#/definitions/schemas.EncryptedFileResponse'
+      message:
         type: string
     type: object
   schemas.ShowUserResponse:
@@ -196,64 +242,6 @@ paths:
       summary: Decrypt a file
       tags:
       - Encryption
-  /encryption/saved_file:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Save a file to encrypt
-      parameters:
-      - description: File
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: file_saved
-          schema:
-            type: string
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      summary: Save file
-      tags:
-      - Encryption
-  /encryption/upload_file:
-    post:
-      consumes:
-      - multipart/form-data
-      description: Upload a file to encrypt
-      parameters:
-      - description: File
-        in: formData
-        name: file
-        required: true
-        type: file
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: file_uploaded
-          schema:
-            type: string
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      summary: Upload file
-      tags:
-      - Encryption
   /encryption/upload_key:
     post:
       consumes:
@@ -283,6 +271,182 @@ paths:
       summary: Upload key
       tags:
       - Encryption
+  /file:
+    delete:
+      description: deletes a file
+      parameters:
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.DeleteFileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.DeleteFileResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Delete file
+      tags:
+      - File
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all encrypted files
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListFilesResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get all encrypted files
+      tags:
+      - File
+  /file/by_name:
+    get:
+      description: Provide the file data
+      parameters:
+      - description: filename to find
+        in: query
+        name: filename
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ShowFileResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Find file by name
+      tags:
+      - File
+  /file/by_username:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of encrypted files by username
+      parameters:
+      - description: Username
+        in: query
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListFilesResponse'
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get encrypted files by username
+      tags:
+      - File
+  /file/upload_encrypted_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a encrypted file
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: file_saved
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Upload encrypted file
+      tags:
+      - File
+  /file/upload_file:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a file to encrypt
+      parameters:
+      - description: File
+        in: formData
+        name: arquivo
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: file_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "404":
+          description: not_found
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Upload file
+      tags:
+      - File
   /user:
     delete:
       description: Deletes a user
@@ -319,7 +483,6 @@ paths:
       consumes:
       - application/json
       description: Get a list of all users
-
       parameters:
       - description: Bearer JWT token
         in: header

@@ -12,3 +12,10 @@ type PublicKey struct {
 	KeyBytes  []byte             `bson:"key_bytes"`
 	CreatedAt time.Time          `bson:"created_at"`
 }
+
+type AttestationKey struct {
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	Username  string             `bson:"username"`
+	KeyBytes  []byte             `bson:"key_bytes"`
+	CreatedAt time.Time          `bson:"created_at"`
+}

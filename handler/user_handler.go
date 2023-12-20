@@ -116,7 +116,21 @@ func CreateUser(ctx *gin.Context) {
 		Address:     request.Address,
 	}
 
-	_, err := userCollection.InsertOne(context.Background(), user)
+	err := userCollection.FindOne(context.Background(),
+		bson.M{"username": user.Username}).Decode(&user)
+	if err == nil {
+		response(ctx, 500, "username_already_exists", err)
+		return
+	}
+
+	err = userCollection.FindOne(context.Background(),
+		bson.M{"email": user.Email}).Decode(&user)
+	if err == nil {
+		response(ctx, 500, "email_already_exists", err)
+		return
+	}
+
+	_, err = userCollection.InsertOne(context.Background(), user)
 	if err != nil {
 		response(ctx, 500, "user_not_created", err)
 	}
@@ -137,13 +151,11 @@ func CreateUser(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /user [put]
 func UpdateUser(ctx *gin.Context) {
-	_, err := MiddlewaveVerifyToken(ctx)
+	username, err := MiddlewaveVerifyToken(ctx)
 	if err != nil {
 		response(ctx, 403, "invalid_token", err)
 		return
 	}
-	
-	username := ctx.Query("username")
 
 	request := schemas.UpdateUserRequest{}
 	if err := ctx.ShouldBindJSON(&request); err != nil {
@@ -185,7 +197,7 @@ func UpdateUser(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /user [delete]
 func DeleteUser(ctx *gin.Context) {
-	_, err := MiddlewaveVerifyToken(ctx)
+	username, err := MiddlewaveVerifyToken(ctx)
 	if err != nil {
 		response(ctx, 403, "invalid_token", err)
 		return
@@ -196,12 +208,8 @@ func DeleteUser(ctx *gin.Context) {
 
 	collection := config.GetMongoDB().Collection("user")
 
-	username := schemas.DeleteUserRequest{
-		Username: request.Username,
-	}
-
 	var deletedUser model.User
-	filter := bson.M{"username": username.Username}
+	filter := bson.M{"username": username}
 
 	err = collection.FindOneAndDelete(context.Background(), filter).Decode(&deletedUser)
 	if err != nil {

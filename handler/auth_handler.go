@@ -74,14 +74,13 @@ func findUserByUsername(username string) (string, error) {
 	userCollection := config.GetMongoDB().Collection("user")
 	err := userCollection.FindOne(context.Background(), filter).Decode(&loginUser)
 	if err != nil {
-		return username, nil
+		return "", fmt.Errorf("user_not_found")
 	}
-
-	return "", fmt.Errorf("user_not_found")
+	return username, nil
 }
 
 func MiddlewaveVerifyToken(ctx *gin.Context) (string, error) {
-	tokenValue := ctx.GetHeader("Authorization")
+	tokenValue := ctx.Request.FormValue("token")
 
 	username, err := verifyToken(tokenValue)
 
@@ -89,14 +88,14 @@ func MiddlewaveVerifyToken(ctx *gin.Context) (string, error) {
 		return "", err
 	}
 
-	username, err = findUserByUsername(username)
+	username2, err := findUserByUsername(username)
 
 	if err != nil {
 		return "", err
 	}
-	
+
 	fmt.Printf("deu bom")
-	return username, nil
+	return username2, nil
 }
 
 func verifyToken(tokenValue string) (string, error) {

@@ -14,6 +14,6 @@ func fileRoutes(router *gin.Engine, basePath string, pathResource string) {
 		file.GET("/by_username", handler.GetFilesByUsername)
 		file.POST("/upload_encrypted_file", handler.SavedFile)
 		file.POST("/upload_file", handler.UploadFile)
-		file.DELETE("", handler.DeleteFile)
+		file.DELETE("/:arquivo", handler.DeleteFile)
 	}
 }

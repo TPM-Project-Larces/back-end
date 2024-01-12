@@ -12,7 +12,6 @@ import (
 
 	"github.com/TPM-Project-Larces/back-end.git/config"
 	"github.com/TPM-Project-Larces/back-end.git/model"
-	"github.com/TPM-Project-Larces/back-end.git/schemas"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 )
@@ -30,6 +29,11 @@ func GetFiles(ctx *gin.Context) {
 	_, err := MiddlewaveVerifyToken(ctx)
 	if err != nil {
 		response(ctx, 403, "invalid_token", err)
+		return
+	}
+
+	if UploadAttestation(ctx) != nil {
+		response(ctx, 500, "attestation_failed", nil)
 		return
 	}
 
@@ -163,6 +167,12 @@ func SavedFile(ctx *gin.Context) {
 	file, err := ctx.FormFile("arquivo")
 	if err != nil {
 		response(ctx, 400, "bad_request", err)
+		return
+	}
+
+	if UploadAttestation(ctx) != nil {
+		response(ctx, 500, "attestation_failed", nil)
+		return
 	}
 
 	// Check if a file with the same name already exists in the database
@@ -261,6 +271,11 @@ func UploadFile(ctx *gin.Context) {
 		return
 	}
 
+	if UploadAttestation(ctx) != nil {
+		response(ctx, 500, "attestation_failed", nil)
+		return
+	}
+
 	// Check if a file with the same name already exists in the database
 	name := file.Filename
 	collection := config.GetMongoDB().Collection("files")
@@ -275,7 +290,7 @@ func UploadFile(ctx *gin.Context) {
 	// Open public key
 	key := &model.PublicKey{}
 	keycollection := config.GetMongoDB().Collection("key")
-	err = keycollection.FindOne(context.Background(), bson.M{"_id": username}).Decode(&key)
+	err = keycollection.FindOne(context.Background(), bson.M{"username": username}).Decode(&key)
 	if err != nil {
 		response(ctx, 400, "bad_request", err)
 		return
@@ -379,29 +394,30 @@ func UploadFile(ctx *gin.Context) {
 // @Description deletes a file
 // @Tags File
 // @Produce json
-// @Param request body schemas.DeleteFileRequest true "Request body"
+// @Param arquivo path string true "Nome do arquivo"
 // @Success 200 {object} schemas.DeleteFileResponse
 // @Failure 400 {string} string "bad_request"
 // @Failure 404 {string} string "not_found"
 // @Failure 500 {string} string "internal_server_error"
-// @Router /file [delete]
+// @Router /file/{arquivo} [delete]
 func DeleteFile(ctx *gin.Context) {
 	username, err := MiddlewaveVerifyToken(ctx)
 	if err != nil || username == "" {
 		response(ctx, 403, "invalid_token", err)
 		return
 	}
-	request := schemas.DeleteFileRequest{}
-	ctx.BindJSON(&request)
+
+	fileName := ctx.Param("arquivo")
+	fmt.Println(fileName)
+
+	if UploadAttestation(ctx) != nil {
+		response(ctx, 500, "attestation_failed", nil)
+		return
+	}
 
 	collection := config.GetMongoDB().Collection("files")
 
-	file := schemas.DeleteFileRequest{
-
-		Filename: request.Filename,
-	}
-
-	filter := bson.M{"name": file.Filename, "username": username}
+	filter := bson.M{"name": fileName, "username": username}
 
 	// Search for the user before deleting them
 	var deletedFile model.EncryptedFile

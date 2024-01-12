@@ -6,6 +6,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"github.com/TPM-Project-Larces/back-end.git/config"
 	"github.com/TPM-Project-Larces/back-end.git/model"
 	"github.com/gin-gonic/gin"
@@ -69,7 +70,7 @@ func UploadChallenge(ctx *gin.Context) {
 	challengeCollection := config.GetMongoDB().Collection("challenge")
 
 	// Checks if the user has a challenge in database
-	existingSig := model.PublicKey{}
+	existingSig := model.Challenge{}
 	err = challengeCollection.FindOne(context.Background(),
 		bson.M{"username": username}).Decode(&existingSig)
 	if err == nil {
@@ -90,6 +91,7 @@ func UploadChallenge(ctx *gin.Context) {
 	_, err = challengeCollection.InsertOne(context.Background(), challenge)
 	if err != nil {
 		response(ctx, 500, "challenge_not_regenerated", err)
+		return
 	}
 
 	err = os.Remove(tempFile.Name())
@@ -155,7 +157,7 @@ func UploadSignature(ctx *gin.Context) {
 	signatureCollection := config.GetMongoDB().Collection("signature")
 
 	// Checks if the user has a signature in database
-	existingSig := model.PublicKey{}
+	existingSig := model.Signature{}
 	err = signatureCollection.FindOne(context.Background(),
 		bson.M{"username": username}).Decode(&existingSig)
 	if err == nil {
@@ -176,6 +178,7 @@ func UploadSignature(ctx *gin.Context) {
 	_, err = signatureCollection.InsertOne(context.Background(), signature)
 	if err != nil {
 		response(ctx, 500, "signature_not_regenerated", err)
+		return
 	}
 
 	err = os.Remove(tempFile.Name())
@@ -274,6 +277,7 @@ func UploadAttestationKey(ctx *gin.Context) {
 // @Tags Attestation
 // @Accept json
 // @Produce json
+// @Param file formData file true "File"
 // @Success 200 {string} string "attestation_successfully"
 // @Failure 500 {string} string "internal_server_rror"
 // @Router /attestation/make_attestation [post]
@@ -283,24 +287,23 @@ func UploadAttestation(ctx *gin.Context) error {
 		response(ctx, 403, "invalid_token", err)
 		return err
 	}
-	ctx.Request.ParseMultipartForm(10 << 20)
 
-	file, err := ctx.FormFile("arquivo")
-	if err != nil {
-		response(ctx, 500, "internal_server_error", nil)
-		return err
-	}
+	ctx.Request.ParseMultipartForm(10 << 20)
 
 	keyCollection := config.GetMongoDB().Collection("attestationkey")
 
 	// Checks if the user has a key in database
 	existingKey := model.AttestationKey{}
 	err = keyCollection.FindOne(context.Background(), bson.M{"username": username}).Decode(&existingKey)
-
-	blockPublicKey, _ := pem.Decode(existingKey.KeyBytes)
 	if err != nil {
 		response(ctx, 500, "internal_server_error", nil)
 		return err
+	}
+
+	blockPublicKey, _ := pem.Decode(existingKey.KeyBytes)
+	if blockPublicKey == nil {
+		response(ctx, 500, "internal_server_error", nil)
+		return errors.New("failed to decode PEM block containing public key")
 	}
 
 	publicKey, err := x509.ParsePKIXPublicKey(blockPublicKey.Bytes)
@@ -309,28 +312,36 @@ func UploadAttestation(ctx *gin.Context) error {
 		return err
 	}
 
-	publicKeyRsa := publicKey.(*rsa.PublicKey)
-
-	// Open the file directly without saving it to disk
-	uploadedFile, err := file.Open()
-	if err != nil {
+	publicKeyRsa, ok := publicKey.(*rsa.PublicKey)
+	if !ok {
 		response(ctx, 500, "internal_server_error", nil)
-		return err
+		return errors.New("failed to convert to *rsa.PublicKey")
 	}
-	defer uploadedFile.Close()
 
 	//Find User Signature
 	signatureCollection := config.GetMongoDB().Collection("signature")
 	Signature := model.Signature{}
 	err = signatureCollection.FindOne(context.Background(), bson.M{"username": username}).Decode(&Signature)
 
+	blockSignature, _ := pem.Decode(Signature.Data)
+	if blockPublicKey == nil {
+		response(ctx, 500, "internal_server_error", nil)
+		return errors.New("failed to decode PEM block containing public key")
+	}
+
 	//Find User Challenge
 	challengeCollection := config.GetMongoDB().Collection("challenge")
-	Challenge := model.Signature{}
+	Challenge := model.Challenge{}
 	err = challengeCollection.FindOne(context.Background(), bson.M{"username": username}).Decode(&Challenge)
 
+	blockChallenge, _ := pem.Decode(Challenge.Data)
+	if blockPublicKey == nil {
+		response(ctx, 500, "internal_server_error", nil)
+		return errors.New("failed to decode PEM block containing public key")
+	}
+
 	//Make Attestation
-	err = rsa.VerifyPKCS1v15(publicKeyRsa, crypto.SHA256, Challenge.Data, Signature.Data)
+	err = rsa.VerifyPKCS1v15(publicKeyRsa, crypto.SHA256, blockChallenge.Bytes, blockSignature.Bytes)
 	if err != nil {
 		response(ctx, 500, "attestation_failed", nil)
 		return err

@@ -105,7 +105,7 @@ func UploadKey(ctx *gin.Context) {
 // @Description Provide the filename to decrypt
 // @Tags Encryption
 // @Produce json
-// @Param filename formData string true "Filename to decrypt"
+// @Param file formData file true "File"
 // @Success 200 {string} string "file_decrypted"
 // @Failure 400 {string} string "bad_request"
 // @Failure 500 {string} string "internal_server_error"
@@ -117,15 +117,19 @@ func DecryptFile(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Request.ParseMultipartForm(10 << 20)
+	file, err := ctx.FormFile("arquivo")
+	if err != nil {
+		response(ctx, 400, "bad_request", nil)
+		return
+	}
 
-	nameFile := ctx.PostForm("filename")
+	name := file.Filename
 
 	uploadDir := "./encrypted_files"
-	filePath := filepath.Join(uploadDir, nameFile)
+	filePath := filepath.Join(uploadDir, name)
 	_, err = os.Stat(filePath)
 
-	if nameFile == "" || os.IsNotExist(err) {
+	if name == "" || os.IsNotExist(err) {
 		response(ctx, 404, "file_not_found", nil)
 		return
 	} else if err != nil {
@@ -135,7 +139,7 @@ func DecryptFile(ctx *gin.Context) {
 
 	collection := config.GetMongoDB().Collection("files")
 
-	cursor, err := collection.Find(ctx, bson.M{"username": username, "name": nameFile})
+	cursor, err := collection.Find(ctx, bson.M{"username": username, "name": name})
 	if err != nil {
 		response(ctx, 500, "internal_server_error", err)
 		return

@@ -49,11 +49,6 @@ definitions:
       message:
         type: string
     type: object
-  schemas.DeleteFileRequest:
-    properties:
-      filename:
-        type: string
-    type: object
   schemas.DeleteFileResponse:
     properties:
       data:
@@ -185,6 +180,118 @@ info:
   title: Server API
   version: 1.0.0
 paths:
+  /attestation/make_attestation:
+    post:
+      consumes:
+      - application/json
+      description: Confirm tpm attestation
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: attestation_successfully
+          schema:
+            type: string
+        "500":
+          description: internal_server_rror
+          schema:
+            type: string
+      summary: Confirm tpm attestation
+      tags:
+      - Attestation
+  /attestation/upload_attestation_key:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads a public attestation key
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: attestation_key_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Upload attestation key
+      tags:
+      - Attestation
+  /attestation/upload_challenge:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a challenge to TPM
+      parameters:
+      - description: Challenge
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: challenge_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Upload challenge
+      tags:
+      - Attestation
+  /attestation/upload_signature:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a signature from TPM
+      parameters:
+      - description: Signature
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Signature_uploaded
+          schema:
+            type: string
+        "400":
+          description: bad_request
+          schema:
+            type: string
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Upload signature
+      tags:
+      - Attestation
   /auth/login:
     post:
       consumes:
@@ -219,11 +326,11 @@ paths:
     post:
       description: Provide the filename to decrypt
       parameters:
-      - description: Filename to decrypt
+      - description: File
         in: formData
-        name: filename
+        name: file
         required: true
-        type: string
+        type: file
       produces:
       - application/json
       responses:
@@ -272,15 +379,33 @@ paths:
       tags:
       - Encryption
   /file:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of all encrypted files
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/schemas.ListFilesResponse'
+        "500":
+          description: internal_server_error
+          schema:
+            type: string
+      summary: Get all encrypted files
+      tags:
+      - File
+  /file/{arquivo}:
     delete:
       description: deletes a file
       parameters:
-      - description: Request body
-        in: body
-        name: request
+      - description: Nome do arquivo
+        in: path
+        name: arquivo
         required: true
-        schema:
-          $ref: '#/definitions/schemas.DeleteFileRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -301,24 +426,6 @@ paths:
           schema:
             type: string
       summary: Delete file
-      tags:
-      - File
-    get:
-      consumes:
-      - application/json
-      description: Get a list of all encrypted files
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/schemas.ListFilesResponse'
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      summary: Get all encrypted files
       tags:
       - File
   /file/by_name:

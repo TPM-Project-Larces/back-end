@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -80,10 +81,16 @@ func findUserByUsername(username string) (string, error) {
 }
 
 func MiddlewaveVerifyToken(ctx *gin.Context) (string, error) {
-	tokenValue := ctx.Request.FormValue("token")
+	tokenValue := ctx.GetHeader("Authorization")
 
-	username, err := verifyToken(tokenValue)
+	tokenParts := strings.Fields(tokenValue)
+	if len(tokenParts) != 3 || tokenParts[0] != "Bearer" {
+		return "", errors.New("invalid Authorization header format")
+	}
 
+	token := tokenParts[2]
+
+	username, err := verifyToken(token)
 	if err != nil {
 		return "", err
 	}
@@ -94,7 +101,6 @@ func MiddlewaveVerifyToken(ctx *gin.Context) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("deu bom")
 	return username2, nil
 }
 
@@ -126,6 +132,5 @@ func removeBearerPrefix(token string) string {
 	if strings.HasPrefix(token, "Bearer ") {
 		token = strings.TrimPrefix(token, "Bearer ")
 	}
-
 	return token
 }

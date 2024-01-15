@@ -345,7 +345,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/file/by_name": {
+        "/file/:filename": {
             "get": {
                 "description": "Provide the file data",
                 "produces": [
@@ -358,9 +358,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "filename to find",
-                        "name": "filename",
-                        "in": "query",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -392,7 +392,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/file/by_username": {
+        "/file/by_username/:username": {
             "get": {
                 "description": "Get a list of encrypted files by username",
                 "consumes": [
@@ -408,9 +408,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Username",
-                        "name": "username",
-                        "in": "query",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],
@@ -779,9 +779,9 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User` + "`" + `s username to find",
-                        "name": "username",
-                        "in": "query",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
                         "required": true
                     }
                 ],

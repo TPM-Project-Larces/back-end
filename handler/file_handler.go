@@ -22,6 +22,7 @@ import (
 // @Tags File
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer JWT token" @in header
 // @Success 200 {object} schemas.ListFilesResponse
 // @Failure 500 {string} string "internal_server_error"
 // @Router /file [get]
@@ -66,11 +67,11 @@ func GetFiles(ctx *gin.Context) {
 // @Tags File
 // @Accept json
 // @Produce json
-// @Param username query string true "Username"
+// @Param Authorization header string true "Bearer JWT token" @in header
 // @Success 200 {object} schemas.ListFilesResponse
 // @Failure 400 {string} string "bad_request"
 // @Failure 500 {string} string "internal_server_error"
-// @Router /file/by_username [get]
+// @Router /file/by_username/:username [get]
 func GetFilesByUsername(ctx *gin.Context) {
 	_, err := MiddlewaveVerifyToken(ctx)
 	if err != nil {
@@ -78,7 +79,12 @@ func GetFilesByUsername(ctx *gin.Context) {
 		return
 	}
 
-	username := ctx.Query("username")
+	if UploadAttestation(ctx) != nil {
+		response(ctx, 500, "attestation_failed", nil)
+		return
+	}
+
+	username := ctx.Param("username")
 	if username == "" {
 		response(ctx, 400, "Username parameter is required", nil)
 		return
@@ -112,12 +118,12 @@ func GetFilesByUsername(ctx *gin.Context) {
 // @Description Provide the file data
 // @Tags File
 // @Produce json
-// @Param filename query string true "filename to find"
+// @Param Authorization header string true "Bearer JWT token" @in header
 // @Success 200 {object} schemas.ShowFileResponse
 // @Failure 400 {string} string "bad_request"
 // @Failure 404 {string} string "not_found"
 // @Failure 500 {string} string "internal_server_error"
-// @Router /file/by_name [get]
+// @Router /file/:filename [get]
 func GetFileByName(ctx *gin.Context) {
 	_, err := MiddlewaveVerifyToken(ctx)
 	if err != nil {
@@ -125,8 +131,13 @@ func GetFileByName(ctx *gin.Context) {
 		return
 	}
 
-	name := ctx.Query("filename")
-	fmt.Println("name: " + name)
+	if UploadAttestation(ctx) != nil {
+		response(ctx, 500, "attestation_failed", nil)
+		return
+	}
+
+	name := ctx.Param("filename")
+
 	collection := config.GetMongoDB().Collection("files")
 
 	filter := bson.M{"name": name}
@@ -136,6 +147,7 @@ func GetFileByName(ctx *gin.Context) {
 	err = collection.FindOne(context.Background(), filter).Decode(&result)
 
 	if err != nil {
+		fmt.Println("Erro ao decodificar o resultado do banco de dados:", err)
 		response(ctx, 400, "bad_request", err)
 		return
 	}

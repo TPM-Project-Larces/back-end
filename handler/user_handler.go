@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-
 	"github.com/TPM-Project-Larces/back-end.git/config"
 	"github.com/TPM-Project-Larces/back-end.git/model"
 	"github.com/TPM-Project-Larces/back-end.git/schemas"
@@ -57,7 +56,7 @@ func GetUsers(ctx *gin.Context) {
 // @Description Provide the user data
 // @Tags User
 // @Produce json
-// @Param username query string true "User`s username to find"
+// @Param Authorization header string true "Bearer JWT token" @in header
 // @Success 200 {object} schemas.ShowUserResponse
 // @Failure 400 {string} string "bad_request"
 // @Failure 404 {string} string "not_found"

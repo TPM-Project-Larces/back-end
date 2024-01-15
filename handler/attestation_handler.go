@@ -347,6 +347,5 @@ func UploadAttestation(ctx *gin.Context) error {
 		return err
 	}
 
-	response(ctx, 200, "attestation_successfully", nil)
 	return nil
 }

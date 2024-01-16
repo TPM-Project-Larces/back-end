@@ -329,6 +329,15 @@ const docTemplate = `{
                     "File"
                 ],
                 "summary": "Get all encrypted files",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer JWT token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

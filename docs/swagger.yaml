@@ -383,6 +383,12 @@ paths:
       consumes:
       - application/json
       description: Get a list of all encrypted files
+      parameters:
+      - description: Bearer JWT token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       produces:
       - application/json
       responses:

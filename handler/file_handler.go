@@ -383,7 +383,7 @@ func UploadFile(ctx *gin.Context) {
 		name := file.Filename
 		data := encryptedBlocks
 		collection := config.GetMongoDB().Collection("files")
-		file := model.EncryptedFile{Username: username, Name: name, Data: data, LocallyEncrypted: false}
+		file := model.EncryptedFile{Username: username, Name: name, Data: data, Size: len(encryptedBlocks), LocallyEncrypted: false}
 		_, err := collection.InsertOne(context.Background(), file)
 		if err != nil {
 			response(ctx, 400, "bad_request", err)

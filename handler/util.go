@@ -2,12 +2,14 @@ package handler
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 
+	"github.com/TPM-Project-Larces/back-end.git/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -70,5 +72,33 @@ func sendFile(fileName string, url string) error {
 		return nil
 	} else {
 		return errors.New("file not sent")
+	}
+}
+
+func sendString(data string, url string) error {
+	stringData := model.StringData{Data: data}
+
+	requestBody, err := json.Marshal(stringData)
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		return err
+	}
+	request.Header.Set("Content-Type", "application/json") // Define o tipo de conteúdo como JSON
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusOK {
+		return nil
+	} else {
+		return errors.New("string not sent")
 	}
 }

@@ -2,13 +2,17 @@ package handler
 
 import (
 	"context"
-	"github.com/TPM-Project-Larces/back-end.git/config"
-	"github.com/TPM-Project-Larces/back-end.git/model"
-	"go.mongodb.org/mongo-driver/bson"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
+
+	"github.com/TPM-Project-Larces/back-end.git/config"
+	"github.com/TPM-Project-Larces/back-end.git/model"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/gin-gonic/gin"
 )
@@ -98,6 +102,83 @@ func UploadKey(ctx *gin.Context) {
 	}
 
 	ctx.JSON(200, gin.H{"message": "key_uploaded", "username": username})
+}
+
+// @BasePath /
+// @Summary Search file
+// @Description Search file
+// @Tags Encryption
+// @Accept json
+// @Produce json
+// @Param request body model.StringData true "Request body"
+// @Success 200 {object} schemas.ShowFileResponse
+// @Failure 400 {string} string "bad_request"
+// @Failure 404 {string} string "not_found"
+// @Failure 500 {string} string "internal_server_error"
+// @Router /encryption/search_file [post]
+func SearchFile(ctx *gin.Context) {
+
+	request := model.StringData{}
+	ctx.BindJSON(&request)
+
+	name := model.StringData{
+		Data: request.Data,
+	}
+
+	fmt.Println("aquiiii", name.Data)
+
+	collection := config.GetMongoDB().Collection("files")
+
+	filter := bson.M{"name": name.Data}
+
+	var result model.EncryptedFile
+	err := collection.FindOne(context.Background(), filter).Decode(&result)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			response(ctx, 404, "file_not_found", nil)
+			return
+		}
+
+		response(ctx, 400, "bad_request", err)
+		return
+	}
+
+	if len(result.Data) == 0 {
+		response(ctx, 400, "bad_request", nil)
+		return
+	}
+
+	dir := "./agent_files"
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		err = os.Mkdir(dir, os.ModePerm)
+		if err != nil {
+			response(ctx, 500, "internal_server_error", err)
+			return
+		}
+	}
+
+	filePath := dir + "/" + name.Data
+	err = ioutil.WriteFile(filePath, []byte(result.Data), 0644)
+	if err != nil {
+		response(ctx, 500, "internal_server_error", err)
+		return
+	}
+
+	fmt.Println("ate aq")
+	url := "http://localhost:3000/encryption/save_file"
+	if err := sendFile(filePath, url); err != nil {
+		response(ctx, 500, "internal_server_error", err)
+		return
+	}
+
+	url2 := "http://localhost:3000/encryption/size_and_decrypt"
+	if err := sendString(strconv.Itoa(result.Size), url2); err != nil {
+		response(ctx, 500, "internal_server_error", err)
+		return
+	}
+
+	ctx.JSON(200, gin.H{"file_saved": filePath})
 }
 
 // @BasePath /

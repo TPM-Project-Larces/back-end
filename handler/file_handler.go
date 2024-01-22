@@ -71,9 +71,9 @@ func GetFiles(ctx *gin.Context) {
 // @Success 200 {object} schemas.ListFilesResponse
 // @Failure 400 {string} string "bad_request"
 // @Failure 500 {string} string "internal_server_error"
-// @Router /file/by_username/:username [get]
+// @Router /file/by_username [get]
 func GetFilesByUsername(ctx *gin.Context) {
-	_, err := MiddlewaveVerifyToken(ctx)
+	username, err := MiddlewaveVerifyToken(ctx)
 	if err != nil {
 		response(ctx, 403, "invalid_token", err)
 		return
@@ -81,12 +81,6 @@ func GetFilesByUsername(ctx *gin.Context) {
 
 	if UploadAttestation(ctx) != nil {
 		response(ctx, 500, "attestation_failed", nil)
-		return
-	}
-
-	username := ctx.Param("username")
-	if username == "" {
-		response(ctx, 400, "Username parameter is required", nil)
 		return
 	}
 

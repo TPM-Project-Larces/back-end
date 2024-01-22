@@ -63,13 +63,11 @@ func GetUsers(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /user/username [get]
 func GetUserByUsername(ctx *gin.Context) {
-	_, err := MiddlewaveVerifyToken(ctx)
+	username, err := MiddlewaveVerifyToken(ctx)
 	if err != nil {
 		response(ctx, 403, "invalid_token", err)
 		return
 	}
-
-	username := ctx.Query("username")
 
 	userCollection := config.GetMongoDB().Collection("user")
 

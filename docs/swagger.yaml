@@ -442,37 +442,6 @@ paths:
       summary: Get all encrypted files
       tags:
       - File
-  /file/:filename:
-    get:
-      description: Provide the file data
-      parameters:
-      - description: Bearer JWT token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/schemas.ShowFileResponse'
-        "400":
-          description: bad_request
-          schema:
-            type: string
-        "404":
-          description: not_found
-          schema:
-            type: string
-        "500":
-          description: internal_server_error
-          schema:
-            type: string
-      summary: Find file by name
-      tags:
-      - File
   /file/{arquivo}:
     delete:
       description: deletes a file
@@ -504,7 +473,7 @@ paths:
       summary: Delete file
       tags:
       - File
-  /file/by_username/:username:
+  /file/by_username:
     get:
       consumes:
       - application/json

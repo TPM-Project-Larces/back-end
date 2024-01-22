@@ -117,6 +117,10 @@ func UploadKey(ctx *gin.Context) {
 // @Failure 500 {string} string "internal_server_error"
 // @Router /encryption/search_file [post]
 func SearchFile(ctx *gin.Context) {
+	username, err := MiddlewaveVerifyToken(ctx)
+	if err != nil || username == "" {
+		response(ctx, 403, "invalid_token", err)
+	}
 
 	request := model.StringData{}
 	ctx.BindJSON(&request)
@@ -127,12 +131,17 @@ func SearchFile(ctx *gin.Context) {
 
 	fmt.Println("aquiiii", name.Data)
 
+	if UploadAttestation(ctx) != nil {
+		response(ctx, 500, "attestation_failed", nil)
+		return
+	}
+
 	collection := config.GetMongoDB().Collection("files")
 
 	filter := bson.M{"name": name.Data}
 
 	var result model.EncryptedFile
-	err := collection.FindOne(context.Background(), filter).Decode(&result)
+	err = collection.FindOne(context.Background(), filter).Decode(&result)
 
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
